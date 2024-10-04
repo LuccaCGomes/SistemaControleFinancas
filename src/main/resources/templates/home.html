@@ -1,10 +1,18 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
 <head>
-    <title>Home</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controle Financeiro</title>
+    <link rel="stylesheet" th:href="@{/css/styleHome.css}" />
 </head>
 <body>
-<h1>Controle Financeiro</h1>
-<a href="/login">Login</a> | <a href="/register">Register</a>
+<div class="container">
+    <h1>Sistema de Controle Financeiro</h1>
+    <nav class="nav-links">
+        <a href="/login" class="nav-link">Login</a>
+        <a href="/register" class="nav-link">Cadastre-se</a>
+    </nav>
+</div>
 </body>
 </html>
