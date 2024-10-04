@@ -1,10 +1,16 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Logged In</title>
+    <link rel="stylesheet" th:href="@{/css/styleLoggedIn.css}" />
 </head>
 <body>
-<h1>User logged in successfully!</h1>
-<a href="/">Back to Home</a>
+<div class="container">
+    <h1>Bem-vindo ao Sistema de Controle Financeiro!</h1>
+    <p class="success-message">Usuário logado com sucesso!</p>
+    <a href="/" class="back-link">Página Inicial</a>
+</div>
 </body>
 </html>
