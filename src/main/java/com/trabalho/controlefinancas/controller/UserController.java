@@ -39,6 +39,7 @@ public class UserController {
     @PostMapping("/login")
     public String loginUser(@RequestParam String username, @RequestParam String password, Model model) {
         if (userService.loginUser(username, password)) {
+            model.addAttribute("username", username);
             model.addAttribute("message", "User logged in successfully");
             return "loggedin";
         } else {
