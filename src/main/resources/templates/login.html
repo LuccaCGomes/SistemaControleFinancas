@@ -15,6 +15,8 @@
         <input type="submit" value="Login"/>
     </form>
     <a href="/" class="back-link">Página Inicial</a>
+
+    <p th:if="${errorMessage}" th:text="${errorMessage}" style="color:red;"></p>
 </div>
 </body>
 </html>

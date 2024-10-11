@@ -9,7 +9,7 @@
 <body>
 <div class="container">
     <h1>Bem-vindo ao Sistema de Controle Financeiro, <span th:text="${username}"></span>!</h1>
-    <p class="success-message">Usuário logado com sucesso!</p>
+    <p th:if="${message}" th:text="${message}" style="color:#27ae60;"></p>
     <a href="/" class="back-link">Página Inicial</a>
 </div>
 </body>
