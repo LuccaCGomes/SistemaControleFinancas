@@ -1,0 +1,81 @@
+package com.trabalho.controlefinancas.model;
+
+import jakarta.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
+
+@Entity
+@Table(name = "category")
+public class Category {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false, unique = true)
+    private String name;
+
+    @Column
+    private String description;
+
+    @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Transaction> transactions = new ArrayList<>();
+
+    // Default constructor
+    public Category() {}
+
+    // Constructor with name
+    public Category(String name) {
+        this.name = name;
+    }
+
+    // Constructor with name and description
+    public Category(String name, String description) {
+        this.name = name;
+        this.description = description;
+    }
+
+    // Getters and setters
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public List<Transaction> getTransactions() {
+        return transactions;
+    }
+
+    public void setTransactions(List<Transaction> transactions) {
+        this.transactions = transactions;
+    }
+
+    // Helper method to add a transaction
+    public void addTransaction(Transaction transaction) {
+        transactions.add(transaction);
+        transaction.setCategory(this);
+    }
+
+    // Helper method to remove a transaction
+    public void removeTransaction(Transaction transaction) {
+        transactions.remove(transaction);
+        transaction.setCategory(null);
+    }
+}
