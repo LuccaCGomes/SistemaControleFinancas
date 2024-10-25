@@ -14,16 +14,20 @@ public class Transaction {
 
     @Enumerated(EnumType.STRING)
     private TransactionType type; // RECEITA ou DESPESA
-
-    private String category;
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "category_id", nullable = false)
+    private Category category;
+    @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal amount;
+    @Column(nullable = false)
     private LocalDate date;
+    @Column(nullable = false)
     private String description;
 
     public Transaction() {
     }
 
-    public Transaction(TransactionType type, String category, BigDecimal amount, LocalDate date, String description) {
+    public Transaction(TransactionType type, Category category, BigDecimal amount, LocalDate date, String description) {
         this.type = type;
         this.category = category;
         this.amount = amount;
@@ -49,11 +53,11 @@ public class Transaction {
         this.type = type;
     }
 
-    public String getCategory() {
+    public Category getCategory() {
         return category;
     }
 
-    public void setCategory(String category) {
+    public void setCategory(Category category) {
         this.category = category;
     }
 
