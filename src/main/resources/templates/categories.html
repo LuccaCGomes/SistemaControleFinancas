@@ -12,14 +12,14 @@
 <!-- Nav -->
 <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
   <div class="container">
-    <a class="navbar-brand" href="#">Sistema de Controle Financeiro</a>
+    <a class="navbar-brand" href="/loggedin">Sistema de Controle Financeiro</a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
       <span class="navbar-toggler-icon"></span>
     </button>
     <div class="collapse navbar-collapse" id="navbarNav">
       <ul class="navbar-nav ms-auto">
         <li class="nav-item">
-          <a class="nav-link" th:href="@{/}">Home</a>
+          <a class="nav-link" th:href="@{/loggedin}">Home</a>
         </li>
         <li class="nav-item">
           <a class="nav-link" th:href="@{/add-transaction}">Adicionar Transação</a>
@@ -45,7 +45,7 @@
 
   <div class="row mb-4">
     <div class="col">
-      <h2>Categories</h2>
+      <h2>Categorias</h2>
     </div>
     <div class="col text-end">
       <a th:href="@{/add-category}" class="btn btn-primary">

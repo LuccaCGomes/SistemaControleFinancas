@@ -5,6 +5,30 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body class="bg-light">
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container">
+        <a class="navbar-brand" href="/loggedin">Sistema de Controle Financeiro</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+            <li class="nav-item">
+            <a class="nav-link" th:href="@{/loggedin}">Home</a>
+            </li>
+            <li class="nav-item">
+            <a class="nav-link" th:href="@{/add-transaction}">Adicionar Transação</a>
+            </li>
+            <li class="nav-item">
+            <a class="nav-link active" th:href="@{/transactions}">Ver Transações</a>
+            </li>
+            <li class="nav-item">
+            <a class="nav-link" th:href="@{/add-category}">Adicionar Categorias</a>
+            </li>
+        </ul>
+        </div>
+    </div>
+</nav>
 <div class="container mt-5">
     <div class="card">
         <div class="card-header">
@@ -55,12 +79,12 @@
                                 <a th:href="@{/transactions/edit/{id}(id=${transaction.id})}"
                                    class="btn btn-warning">Edit</a>
                                 <button type="button" class="btn btn-danger"
-                                        th:onclick="'confirmDelete(' + ${transaction.id} + ')'">Delete</button>
+                                        th:onclick="'confirmDelete(' + ${transaction.id} + ')'">Deletar</button>
                             </div>
                         </td>
                     </tr>
                     <tr th:if="${#lists.isEmpty(transactions)}">
-                        <td colspan="5" class="text-center">No transactions found</td>
+                        <td colspan="5" class="text-center">Nenhuma transação encontrada!</td>
                     </tr>
                     </tbody>
                     <tfoot th:if="${!#lists.isEmpty(transactions)}">

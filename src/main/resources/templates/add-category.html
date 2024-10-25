@@ -10,14 +10,14 @@
 <!-- Nav -->
 <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
   <div class="container">
-    <a class="navbar-brand" href="#">Sistema de Controle Financeiro</a>
+    <a class="navbar-brand" href="/loggedin">Sistema de Controle Financeiro</a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
       <span class="navbar-toggler-icon"></span>
     </button>
     <div class="collapse navbar-collapse" id="navbarNav">
       <ul class="navbar-nav ms-auto">
         <li class="nav-item">
-          <a class="nav-link" th:href="@{/}">Home</a>
+          <a class="nav-link" th:href="@{/loggedin}">Home</a>
         </li>
         <li class="nav-item">
           <a class="nav-link" th:href="@{/add-transaction}">Adicionar Transação</a>
@@ -57,7 +57,7 @@
                      id="name"
                      name="name"
                      required
-                     placeholder="Enter category name">
+                     placeholder="Digite o nome da categoria">
               <div class="form-text">Nome deve ser único!</div>
             </div>
 
@@ -68,7 +68,7 @@
                         id="description"
                         name="description"
                         rows="3"
-                        placeholder="Enter category description"></textarea>
+                        placeholder="Digite a descrição da categoria"></textarea>
             </div>
 
             <!-- Submit and Cancel Buttons -->
