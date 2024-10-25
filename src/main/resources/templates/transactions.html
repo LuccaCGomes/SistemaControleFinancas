@@ -10,7 +10,7 @@
         <div class="card-header">
             <div class="d-flex justify-content-between align-items-center">
                 <h2 class="mb-0">Transações</h2>
-                <a th:href="@{/transactions/add}" class="btn btn-primary">Adicionar nova Transação</a>
+                <a th:href="@{/add-transaction}" class="btn btn-primary">Adicionar nova Transação</a>
             </div>
         </div>
         <div class="card-body">
@@ -49,7 +49,7 @@
                         <td th:text="${#temporals.format(transaction.date, 'dd/MM/yyyy')}"></td>
                         <td th:text="${transaction.description}"></td>
                         <td th:text="${transaction.category.name}"></td>
-                        <td class="text-end" th:text="${#numbers.formatDecimal(transaction.value, 1, 'POINT', 2, 'COMMA')}"></td>
+                        <td class="text-end" th:text="${#numbers.formatDecimal(transaction.amount, 1, 'POINT', 2, 'COMMA')}"></td>
                         <td>
                             <div class="btn-group btn-group-sm">
                                 <a th:href="@{/transactions/edit/{id}(id=${transaction.id})}"
