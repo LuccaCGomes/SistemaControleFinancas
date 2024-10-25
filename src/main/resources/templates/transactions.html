@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Transações</title>
+</head>
+<body>
+<h1>Transações</h1>
+<table>
+    <thead>
+    <tr>
+        <th>Tipo</th>
+        <th>Categoria</th>
+        <th>Valor</th>
+        <th>Data</th>
+        <th>Descrição</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="transaction : ${transactions}">
+        <td th:text="${transaction.type}"></td>
+        <td th:text="${transaction.category}"></td>
+        <td th:text="${transaction.amount}"></td>
+        <td th:text="${transaction.date}"></td>
+        <td th:text="${transaction.description}"></td>
+    </tr>
+    </tbody>
+</table>
+</body>
+</html>
