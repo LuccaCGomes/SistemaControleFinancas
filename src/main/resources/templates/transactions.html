@@ -65,6 +65,7 @@
                         <th>Descrição</th>
                         <th>Categoria</th>
                         <th class="text-end">Valor</th>
+                        <th>Recorrente</th>
                         <th>Actions</th>
                     </tr>
                     </thead>
@@ -74,6 +75,7 @@
                         <td th:text="${transaction.description}"></td>
                         <td th:text="${transaction.category.name}"></td>
                         <td class="text-end" th:text="${#numbers.formatDecimal(transaction.amount, 1, 'POINT', 2, 'COMMA')}"></td>
+                        <td th:text="${transaction.isRecurring ? 'Sim' : 'Não'}"></td>
                         <td>
                             <div class="btn-group btn-group-sm">
                                 <a th:href="@{/transactions/edit/{id}(id=${transaction.id})}"
@@ -89,7 +91,7 @@
                     </tbody>
                     <tfoot th:if="${!#lists.isEmpty(transactions)}">
                     <tr class="table-dark">
-                        <td colspan="3" class="text-end"><strong>Total:</strong></td>
+                        <td colspan="4" class="text-end"><strong>Total:</strong></td>
                         <td class="text-end">
                             <strong th:text="${#numbers.formatDecimal(totalValue, 1, 'POINT', 2, 'COMMA')}"></strong>
                         </td>
