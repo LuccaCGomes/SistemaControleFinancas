@@ -45,6 +45,7 @@ public class TransactionController {
             @RequestParam BigDecimal amount,
             @RequestParam String date,
             @RequestParam String description,
+            @RequestParam(defaultValue = "false") boolean isRecurring,
             Model model) {
 
         Transaction transaction = new Transaction(
@@ -52,7 +53,8 @@ public class TransactionController {
                 category,
                 amount,
                 LocalDate.parse(date),
-                description
+                description,
+                isRecurring
         );
 
         transactionService.addTransaction(transaction);

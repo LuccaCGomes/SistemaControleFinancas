@@ -23,16 +23,19 @@ public class Transaction {
     private LocalDate date;
     @Column(nullable = false)
     private String description;
+    @Column(nullable = false)
+    private boolean isRecurring;
 
     public Transaction() {
     }
 
-    public Transaction(TransactionType type, Category category, BigDecimal amount, LocalDate date, String description) {
+    public Transaction(TransactionType type, Category category, BigDecimal amount, LocalDate date, String description, boolean isRecurring) {
         this.type = type;
         this.category = category;
         this.amount = amount;
         this.date = date;
         this.description = description;
+        this.isRecurring = isRecurring;
     }
 
     // Getters e Setters
@@ -83,5 +86,13 @@ public class Transaction {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public boolean isRecurring() {
+        return isRecurring;
+    }
+
+    public void setRecurring(boolean isRecurring) {
+        this.isRecurring = isRecurring;
     }
 }
