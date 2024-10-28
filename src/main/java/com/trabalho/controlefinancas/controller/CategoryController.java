@@ -2,6 +2,7 @@ package com.trabalho.controlefinancas.controller;
 
 import com.trabalho.controlefinancas.model.Category;
 import com.trabalho.controlefinancas.repository.CategoryRepository;
+import com.trabalho.controlefinancas.service.CategoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -15,7 +16,7 @@ import java.util.List;
 public class CategoryController {
 
     @Autowired
-    private CategoryRepository categoryRepository;
+    private CategoryService categoryService;
 
     @GetMapping("/add-category")
     public String showAddCategoryForm() {
@@ -24,7 +25,7 @@ public class CategoryController {
 
     @GetMapping("/categories")
     public String showCategories(Model model) {
-        model.addAttribute("categories", categoryRepository.findAll());
+        model.addAttribute("categories", categoryService.getAllCategories());
         return "categories";
     }
 
@@ -34,7 +35,7 @@ public class CategoryController {
                               RedirectAttributes redirectAttributes) {
         try {
             Category category = new Category(name, description);
-            categoryRepository.save(category);
+            categoryService.addCategory(category);
             redirectAttributes.addFlashAttribute("message", "Category successfully added!");
             return "redirect:/categories";
         } catch (Exception e) {
