@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Transactions List</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container">
+        <a class="navbar-brand" href="/loggedin">Sistema de Controle Financeiro</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+            <li class="nav-item">
+            <a class="nav-link" th:href="@{/loggedin}">Home</a>
+            </li>
+            <li class="nav-item">
+            <a class="nav-link" th:href="@{/add-transaction}">Adicionar Transação</a>
+            </li>
+            <li class="nav-item">
+            <a class="nav-link active" th:href="@{/transactions}">Ver Transações</a>
+            </li>
+            <li class="nav-item">
+            <a class="nav-link" th:href="@{/add-category}">Adicionar Categorias</a>
+            </li>
+        </ul>
+        </div>
+    </div>
+</nav>
+<div class="container mt-5">
+    <div class="card">
+        <div class="card-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2 class="mb-0">Transações</h2>
+                <a th:href="@{/add-transaction}" class="btn btn-primary">Adicionar nova Transação</a>
+            </div>
+        </div>
+        <div class="card-body">
+            <!-- Filters -->
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <select class="form-select" id="categoryFilter" th:name="category">
+                        <option value="">Todas Categorias</option>
+                        <option th:each="cat : ${categories}"
+                                th:value="${cat.id}"
+                                th:text="${cat.name}"></option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <input type="date" class="form-control" id="startDate" placeholder="Start Date">
+                </div>
+                <div class="col-md-4">
+                    <input type="date" class="form-control" id="endDate" placeholder="End Date">
+                </div>
+            </div>
+
+            <!-- Transactions Table -->
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead class="table-dark">
+                    <tr>
+                        <th>Data</th>
+                        <th>Descrição</th>
+                        <th>Categoria</th>
+                        <th class="text-end">Valor</th>
+                        <th>Recorrente</th>
+                        <th>Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="transaction : ${transactions}">
+                        <td th:text="${#temporals.format(transaction.date, 'dd/MM/yyyy')}"></td>
+                        <td th:text="${transaction.description}"></td>
+                        <td th:text="${transaction.category.name}"></td>
+                        <td class="text-end" th:text="${#numbers.formatDecimal(transaction.amount, 1, 'POINT', 2, 'COMMA')}"></td>
+                        <td th:text="${transaction.isRecurring ? 'Sim' : 'Não'}"></td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a th:href="@{/transactions/edit/{id}(id=${transaction.id})}"
+                                   class="btn btn-warning">Edit</a>
+                                <button type="button" class="btn btn-danger"
+                                        th:onclick="'confirmDelete(' + ${transaction.id} + ')'">Deletar</button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(transactions)}">
+                        <td colspan="5" class="text-center">Nenhuma transação encontrada!</td>
+                    </tr>
+                    </tbody>
+                    <tfoot th:if="${!#lists.isEmpty(transactions)}">
+                    <tr class="table-dark">
+                        <td colspan="4" class="text-end"><strong>Total:</strong></td>
+                        <td class="text-end">
+                            <strong th:text="${#numbers.formatDecimal(totalValue, 1, 'POINT', 2, 'COMMA')}"></strong>
+                        </td>
+                        <td></td>
+                    </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmar Delete</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                Tem certeza que deseja deletar essa transação?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <form id="deleteForm" method="post" style="display: inline;">
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+<script>
+        function confirmDelete(id) {
+            const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+            const deleteForm = document.getElementById('deleteForm');
+            deleteForm.action = `/transactions/delete/${id}`;
+            modal.show();
+        }
+    </script>
+</body>
+</html>
