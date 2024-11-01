@@ -130,7 +130,7 @@
         function confirmDelete(id) {
             const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
             const deleteForm = document.getElementById('deleteForm');
-            deleteForm.action = `/transactions/delete/${id}`;
+            deleteForm.action = `/delete-transaction/${id}`;
             modal.show();
         }
     </script>
