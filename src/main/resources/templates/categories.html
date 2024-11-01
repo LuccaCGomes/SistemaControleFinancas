@@ -70,6 +70,7 @@
           <tr>
             <th>ID</th>
             <th>Nome</th>
+            <th>Orçamento</th>
             <th>Descrição</th>
             <th>Contador de Transações</th>
             <th>Actions</th>
@@ -79,9 +80,8 @@
           <tr th:each="category : ${categories}">
             <td th:text="${category.id}"></td>
             <td th:text="${category.name}"></td>
-            <td>
-              <span th:text="${category.description ?: 'No description'}"></span>
-            </td>
+            <td th:text="${category.budget != null ? #numbers.formatDecimal(category.budget, 1, 'POINT', 2, 'COMMA') : 'N/A'}"></td>
+            <td th:text="${category.description != null ? category.description : 'N/A'}"></td>
             <td th:text="${category.transactions.size()}"></td>
             <td>
               <div class="btn-group" role="group">

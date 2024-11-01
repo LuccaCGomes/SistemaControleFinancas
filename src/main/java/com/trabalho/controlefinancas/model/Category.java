@@ -1,6 +1,8 @@
 package com.trabalho.controlefinancas.model;
 
 import jakarta.persistence.*;
+
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,6 +19,9 @@ public class Category {
     @Column
     private String description;
 
+    @Column
+    private BigDecimal budget;
+
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Transaction> transactions = new ArrayList<>();
 
@@ -28,10 +33,23 @@ public class Category {
         this.name = name;
     }
 
+    // Constructor with name and budget
+    public Category(String name, BigDecimal budget) {
+        this.name = name;
+        this.budget = budget;
+    }
+
     // Constructor with name and description
     public Category(String name, String description) {
         this.name = name;
         this.description = description;
+    }
+
+    // Constructor with name, description and budget
+    public Category(String name, String description, BigDecimal budget) {
+        this.name = name;
+        this.description = description;
+        this.budget = budget;
     }
 
     // Getters and setters
@@ -49,6 +67,14 @@ public class Category {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public BigDecimal getBudget() {
+        return budget;
+    }
+
+    public void setBudget(BigDecimal budget) {
+        this.budget = budget;
     }
 
     public String getDescription() {

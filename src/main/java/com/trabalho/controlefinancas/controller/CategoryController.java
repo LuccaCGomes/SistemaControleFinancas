@@ -10,6 +10,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Controller
@@ -32,9 +33,10 @@ public class CategoryController {
     @PostMapping("/add-category")
     public String addCategory(@RequestParam String name,
                               @RequestParam(required = false) String description,
+                              @RequestParam BigDecimal budget,
                               RedirectAttributes redirectAttributes) {
         try {
-            Category category = new Category(name, description);
+            Category category = new Category(name, description, budget);
             categoryService.addCategory(category);
             redirectAttributes.addFlashAttribute("message", "Category successfully added!");
             return "redirect:/categories";
