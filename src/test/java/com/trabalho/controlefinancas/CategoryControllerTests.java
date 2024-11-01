@@ -1,14 +1,33 @@
 package com.trabalho.controlefinancas;
 
+import com.trabalho.controlefinancas.controller.CategoryController;
+import com.trabalho.controlefinancas.service.CategoryService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.web.servlet.MockMvc;
 
-@SpringBootTest
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
+@WebMvcTest(CategoryController.class)
 public class CategoryControllerTests {
+
+    @Autowired
+    private MockMvc mockMvc;
+
     @Test
     void contextLoads() {
-        // Verifica se o contexto da aplicação carrega corretamente
-        // Utilizado somente para gerar a pasta site
+        // Este teste irá verificar se o contexto do Spring carrega corretamente
+    }
+    @MockBean
+    private CategoryService categoryService;
+
+    @Test
+    public void showAddCategoryForm_ShouldReturnAddCategoryView() throws Exception {
+        mockMvc.perform(get("/add-category")) // Simula uma requisição GET para /add-category
+                .andExpect(view().name("add-category")); // Verifica se o nome da view retornada é "add-category"
     }
 }
