@@ -6,6 +6,7 @@ import com.trabalho.controlefinancas.model.Category;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class CategoryService {
@@ -19,5 +20,10 @@ public class CategoryService {
 
     public List<Category> getAllCategories() {
         return categoryRepository.findAll();
+    }
+
+    public void deleteCategoryById(Long id){
+        Optional<Category> category = categoryRepository.findById(id);
+        category.ifPresent(categoryRepository::delete);
     }
 }
