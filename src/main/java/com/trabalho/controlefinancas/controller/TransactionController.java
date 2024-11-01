@@ -8,9 +8,7 @@ import com.trabalho.controlefinancas.repository.CategoryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -59,6 +57,12 @@ public class TransactionController {
 
         transactionService.addTransaction(transaction);
         model.addAttribute("message", "Transação adicionada com sucesso!");
+        return "redirect:/transactions";
+    }
+
+    @PostMapping("/delete-transaction/{id}")
+    public String deleteTransaction(@PathVariable Long id) {
+        transactionService.deleteTransactionById(id);
         return "redirect:/transactions";
     }
 }

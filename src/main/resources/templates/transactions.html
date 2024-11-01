@@ -25,6 +25,9 @@
             <li class="nav-item">
             <a class="nav-link" th:href="@{/add-category}">Adicionar Categorias</a>
             </li>
+            <li class="nav-item">
+                <a class="nav-link" th:href="@{/}" style="color: red; font-weight: bold;">Sair</a>
+            </li>
         </ul>
         </div>
     </div>
@@ -130,7 +133,7 @@
         function confirmDelete(id) {
             const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
             const deleteForm = document.getElementById('deleteForm');
-            deleteForm.action = `/transactions/delete/${id}`;
+            deleteForm.action = `/delete-transaction/${id}`;
             modal.show();
         }
     </script>
