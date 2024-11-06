@@ -26,19 +26,31 @@ public class Transaction {
     @Column(nullable = false)
     private boolean isRecurring;
 
+    @ManyToOne
+    private User user;
+
     public Transaction() {
     }
 
-    public Transaction(TransactionType type, Category category, BigDecimal amount, LocalDate date, String description, boolean isRecurring) {
+    public Transaction(TransactionType type, Category category, BigDecimal amount, LocalDate date, String description, boolean isRecurring, User user) {
         this.type = type;
         this.category = category;
         this.amount = amount;
         this.date = date;
         this.description = description;
         this.isRecurring = isRecurring;
+        this.user = user;
     }
 
     // Getters e Setters
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
 
     public Long getId() {
         return id;

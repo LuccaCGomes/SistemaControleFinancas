@@ -7,6 +7,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 public class UserController {
@@ -30,10 +31,15 @@ public class UserController {
     }
 
     @PostMapping("/register")
-    public String registerUser(@RequestParam String username, @RequestParam String password, Model model) {
-        userService.registerUser(username, password);
-        model.addAttribute("message", "User registered successfully");
-        return "login";
+    public String registerUser(@RequestParam String username, @RequestParam String password, Model model, RedirectAttributes redirectAttributes) {
+        try {
+            userService.registerUser(username, password);
+            redirectAttributes.addFlashAttribute("successMessage", "Cadastro concluído! Faça login.");
+            return "redirect:/login";
+        } catch (RuntimeException e) {
+            model.addAttribute("error", "Nome de usuário já existe. Por favor escolha um outro nome de usuário.");
+            return "register";
+        }
     }
 
     @GetMapping("/login")
