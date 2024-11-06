@@ -56,6 +56,12 @@
       <version>4.13.2</version> <!-- versão específica do JUnit -->
       <scope>test</scope>
     </dependency>
+
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-security</artifactId>
+    </dependency>
+
   </dependencies>
 
   <build>

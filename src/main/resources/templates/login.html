@@ -9,13 +9,17 @@
 <body>
 <div class="container">
     <h1>Login</h1>
-    <form action="/login" method="post">
+    <form th:action="@{/login}" method="post">
         <input type="text" name="username" placeholder="Usuário" required/>
         <input type="password" name="password" placeholder="Senha" required/>
         <input type="submit" value="Login"/>
     </form>
-    <a href="/" class="back-link">Página Inicial</a>
 
+    <div class="links">
+        <a th:href="@{/}" class="back-link">Página Inicial</a>
+        <span class="separator">|</span>
+        <a th:href="@{/register}" class="back-link">Cadastro</a>
+    </div>
     <p th:if="${errorMessage}" th:text="${errorMessage}" style="color:red;"></p>
 </div>
 </body>
