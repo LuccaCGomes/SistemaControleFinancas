@@ -9,6 +9,12 @@
 <body>
 <div class="container">
     <h1>Login</h1>
+
+    <!-- Error message -->
+    <div th:if="${param.error}" class="alert alert-error">
+        Senha ou Nome de Usuário inválidos.
+    </div>
+
     <form th:action="@{/login}" method="post">
         <input type="text" name="username" placeholder="Usuário" required/>
         <input type="password" name="password" placeholder="Senha" required/>

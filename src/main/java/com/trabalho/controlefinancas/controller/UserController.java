@@ -34,10 +34,10 @@ public class UserController {
     public String registerUser(@RequestParam String username, @RequestParam String password, Model model, RedirectAttributes redirectAttributes) {
         try {
             userService.registerUser(username, password);
-            redirectAttributes.addFlashAttribute("successMessage", "Registration successful! Please login.");
+            redirectAttributes.addFlashAttribute("successMessage", "Cadastro concluído! Faça login.");
             return "redirect:/login";
         } catch (RuntimeException e) {
-            model.addAttribute("error", "Username already exists. Please choose a different username.");
+            model.addAttribute("error", "Nome de usuário já existe. Por favor escolha um outro nome de usuário.");
             return "register";
         }
     }
