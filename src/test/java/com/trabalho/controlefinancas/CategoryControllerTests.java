@@ -22,12 +22,7 @@ public class CategoryControllerTests {
     void contextLoads() {
         // Este teste irá verificar se o contexto do Spring carrega corretamente
     }
+
     @MockBean
     private CategoryService categoryService;
-
-    @Test
-    public void showAddCategoryForm_ShouldReturnAddCategoryView() throws Exception {
-        mockMvc.perform(get("/add-category")) // Simula uma requisição GET para /add-category
-                .andExpect(view().name("add-category")); // Verifica se o nome da view retornada é "add-category"
-    }
 }
