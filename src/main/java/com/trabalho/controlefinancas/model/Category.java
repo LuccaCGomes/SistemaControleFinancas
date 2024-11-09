@@ -25,6 +25,10 @@ public class Category {
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Transaction> transactions = new ArrayList<>();
 
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false) // Relacionamento com a tabela User
+    private User user;
+
     // Default constructor
     public Category() {}
 
@@ -50,6 +54,14 @@ public class Category {
         this.name = name;
         this.description = description;
         this.budget = budget;
+    }
+
+    // Constructor with name, description, budget and user
+    public Category(String name, String description, BigDecimal budget, User user) {
+        this.name = name;
+        this.description = description;
+        this.budget = budget;
+        this.user = user;
     }
 
     // Getters and setters
@@ -91,6 +103,14 @@ public class Category {
 
     public void setTransactions(List<Transaction> transactions) {
         this.transactions = transactions;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
     }
 
     // Helper method to add a transaction
