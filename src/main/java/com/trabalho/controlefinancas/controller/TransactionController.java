@@ -1,5 +1,6 @@
 package com.trabalho.controlefinancas.controller;
 
+import com.trabalho.controlefinancas.exception.BudgetExceededException;
 import com.trabalho.controlefinancas.model.Category;
 import com.trabalho.controlefinancas.model.Transaction;
 import com.trabalho.controlefinancas.model.TransactionType;
@@ -11,6 +12,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -48,7 +50,8 @@ public class TransactionController {
             @RequestParam String description,
             @RequestParam(defaultValue = "false") boolean isRecurring,
             @AuthenticationPrincipal User user,
-            Model model) {
+            RedirectAttributes redirectAttributes
+            ) {
 
         Transaction transaction = new Transaction(
                 TransactionType.valueOf(type.toUpperCase()),
@@ -60,8 +63,15 @@ public class TransactionController {
                 user
         );
 
-        transactionService.addTransaction(transaction);
-        return "redirect:/transactions";
+        try {
+            transactionService.addTransaction(transaction);
+            redirectAttributes.addFlashAttribute("message", "Transaction added successfully!");
+            return "redirect:/transactions";
+        } catch (BudgetExceededException e) {
+            // Captura a exceção e redireciona com a mensagem de erro
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            return "redirect:/add-transaction";
+        }
     }
 
     @PostMapping("/delete-transaction/{id}")
