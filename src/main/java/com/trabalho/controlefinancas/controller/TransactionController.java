@@ -35,8 +35,8 @@ public class TransactionController {
     }
 
     @GetMapping("/add-transaction")
-    public String showAddTransactionForm(Model model) {
-        List<Category> categories = categoryRepository.findAll();
+    public String showAddTransactionForm(Model model ,@AuthenticationPrincipal User user) {
+        List<Category> categories = categoryRepository.findByUser(user);
         model.addAttribute("categories", categories);
         return "add-transaction";
     }
