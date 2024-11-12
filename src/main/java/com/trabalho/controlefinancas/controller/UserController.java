@@ -1,5 +1,8 @@
 package com.trabalho.controlefinancas.controller;
 
+import com.trabalho.controlefinancas.model.Category;
+import com.trabalho.controlefinancas.model.User;
+import com.trabalho.controlefinancas.service.CategoryService;
 import com.trabalho.controlefinancas.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -9,12 +12,15 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.math.BigDecimal;
+
 @Controller
 public class UserController {
 
     @Autowired
     private UserService userService;
-
+    @Autowired
+    private CategoryService categoryService;
     @GetMapping("/loggedin")
     public String loggedin() {
         return "loggedin";
@@ -34,6 +40,21 @@ public class UserController {
     public String registerUser(@RequestParam String username, @RequestParam String password, Model model, RedirectAttributes redirectAttributes) {
         try {
             userService.registerUser(username, password);
+            //Divida Têcnica para inicialiar categoria padrão.
+            User user = userService.findUserByUsername(username);
+            Category baseCategory1 = new Category("Alimentação", "Gastos com Alimentos");
+            baseCategory1.setUser(user);
+            categoryService.addCategory(baseCategory1);
+            Category baseCategory2 = new Category("Transporte", BigDecimal.valueOf(1000));
+            baseCategory2.setUser(user);
+            categoryService.addCategory(baseCategory2);
+            Category baseCategory3 = new Category("Saúde", "Gastos com Saúde", BigDecimal.valueOf(1500));
+            baseCategory3.setUser(user);
+            categoryService.addCategory(baseCategory3);
+            Category baseCategory4 = new Category("Salário");
+            baseCategory4.setUser(user);
+            categoryService.addCategory(baseCategory4);
+            //termina a dívida tecnica
             redirectAttributes.addFlashAttribute("successMessage", "Cadastro concluído! Faça login.");
             return "redirect:/login";
         } catch (RuntimeException e) {
