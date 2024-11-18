@@ -76,7 +76,9 @@ public class TransactionController {
 
     @PostMapping("/delete-transaction/{id}")
     public String deleteTransaction(@PathVariable Long id, @AuthenticationPrincipal User user) {
+        System.out.println("linha 79");
         transactionService.deleteTransactionByIdAndUser(id, user);
+        System.out.println("linha 81" );
         return "redirect:/transactions";
     }
 }
