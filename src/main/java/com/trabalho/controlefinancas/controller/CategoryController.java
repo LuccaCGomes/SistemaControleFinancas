@@ -5,6 +5,7 @@ import com.trabalho.controlefinancas.model.User;
 import com.trabalho.controlefinancas.repository.CategoryRepository;
 import com.trabalho.controlefinancas.service.CategoryService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -26,11 +27,6 @@ public class CategoryController {
         return "add-category";
     }
 
-//    @GetMapping("/categories")
-//    public String showCategories(Model model) {
-//        model.addAttribute("categories", categoryService.getAllCategories());
-//        return "categories";
-//    }
 
     @GetMapping("/categories")
     public String showCategories(Model model, @AuthenticationPrincipal User user) {
@@ -67,7 +63,8 @@ public class CategoryController {
     }
 
     @PostMapping("/delete-category/{id}")
-    public String deleteCategory(@PathVariable Long id) {
+    public String deleteCategory(@PathVariable Long id, Authentication authentication) {
+        System.out.println("Usuário autenticado: " + authentication.getName());
         categoryService.deleteCategoryById(id);
         return "redirect:/categories";
     }

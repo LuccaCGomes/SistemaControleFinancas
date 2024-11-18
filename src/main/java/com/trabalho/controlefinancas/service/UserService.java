@@ -30,6 +30,13 @@ public class UserService implements UserDetailsService{
         userRepository.save(user);
     }
 
+
+    public User findUserByUsername(String username) {
+        if (userRepository.findByUsername(username).isEmpty()) {
+            throw new RuntimeException("Username doesn't exists");
+        }
+        return userRepository.findByUsername(username).get();
+    }
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         return userRepository.findByUsername(username)

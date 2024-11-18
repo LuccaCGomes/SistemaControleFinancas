@@ -35,8 +35,8 @@ public class TransactionController {
     }
 
     @GetMapping("/add-transaction")
-    public String showAddTransactionForm(Model model) {
-        List<Category> categories = categoryRepository.findAll();
+    public String showAddTransactionForm(Model model ,@AuthenticationPrincipal User user) {
+        List<Category> categories = categoryRepository.findByUser(user);
         model.addAttribute("categories", categories);
         return "add-transaction";
     }
@@ -76,7 +76,9 @@ public class TransactionController {
 
     @PostMapping("/delete-transaction/{id}")
     public String deleteTransaction(@PathVariable Long id, @AuthenticationPrincipal User user) {
+        System.out.println("linha 79");
         transactionService.deleteTransactionByIdAndUser(id, user);
+        System.out.println("linha 81" );
         return "redirect:/transactions";
     }
 }

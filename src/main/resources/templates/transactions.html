@@ -9,26 +9,26 @@
     <div class="container">
         <a class="navbar-brand" href="/loggedin">Sistema de Controle Financeiro</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-        <span class="navbar-toggler-icon"></span>
+            <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav ms-auto">
-            <li class="nav-item">
-            <a class="nav-link" th:href="@{/loggedin}">Home</a>
-            </li>
-            <li class="nav-item">
-            <a class="nav-link" th:href="@{/add-transaction}">Adicionar Transação</a>
-            </li>
-            <li class="nav-item">
-            <a class="nav-link active" th:href="@{/transactions}">Ver Transações</a>
-            </li>
-            <li class="nav-item">
-            <a class="nav-link" th:href="@{/add-category}">Adicionar Categorias</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" th:href="@{/}" style="color: red; font-weight: bold;">Sair</a>
-            </li>
-        </ul>
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/loggedin}">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/add-transaction}">Adicionar Transação</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" th:href="@{/transactions}">Ver Transações</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/add-category}">Adicionar Categorias</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/}" style="color: red; font-weight: bold;">Sair</a>
+                </li>
+            </ul>
         </div>
     </div>
 </nav>
@@ -82,7 +82,7 @@
                         <td>
                             <div class="btn-group btn-group-sm">
                                 <a th:href="@{/transactions/edit/{id}(id=${transaction.id})}"
-                                   class="btn btn-warning">Edit</a>
+                                   class="btn btn-warning">Editar</a>
                                 <button type="button" class="btn btn-danger"
                                         th:onclick="'confirmDelete(' + ${transaction.id} + ')'">Deletar</button>
                             </div>
@@ -121,7 +121,9 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                 <form id="deleteForm" method="post" style="display: inline;">
-                    <button type="submit" class="btn btn-danger">Delete</button>
+                    <!-- CSRF Token -->
+                    <input type="hidden" name="_csrf" th:value="${_csrf.token}"/>
+                    <button type="submit" class="btn btn-danger">Deletar</button>
                 </form>
             </div>
         </div>
@@ -130,12 +132,12 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
 <script>
-        function confirmDelete(id) {
-            const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
-            const deleteForm = document.getElementById('deleteForm');
-            deleteForm.action = `/delete-transaction/${id}`;
-            modal.show();
-        }
-    </script>
+    function confirmDelete(id) {
+        const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+        const deleteForm = document.getElementById('deleteForm');
+        deleteForm.action = `/delete-transaction/${id}`;
+        modal.show();
+    }
+</script>
 </body>
 </html>
