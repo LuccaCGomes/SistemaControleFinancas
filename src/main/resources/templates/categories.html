@@ -28,10 +28,16 @@
           <a class="nav-link" th:href="@{/transactions}">Ver Transações</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link active" th:href="@{/categories}">Categorias</a>
+          <a class="nav-link" th:href="@{/add-category}">Adicionar Categorias</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" th:href="@{/}" style="color: red; font-weight: bold;">Sair</a>
+          <a class="nav-link active" th:href="@{/categories}">Ver Categorias</a>
+        </li>
+        <li class="nav-item">
+          <form action="/logout" method="POST" style="display: inline;">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+            <button type="submit" class="btn btn-link nav-link" style="color: red; font-weight: bold;">Sair</button>
+          </form>
         </li>
       </ul>
     </div>

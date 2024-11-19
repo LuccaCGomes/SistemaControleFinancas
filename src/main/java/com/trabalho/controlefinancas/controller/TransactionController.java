@@ -30,6 +30,12 @@ public class TransactionController {
     @GetMapping("/transactions")
     public String showTransactions(Model model, @AuthenticationPrincipal User user) {
         List<Transaction> transactions = transactionService.getUserTransactions(user);
+
+        BigDecimal totalValue = transactions.stream()
+                .map(Transaction::getAmount) // Assuming `getAmount()` returns BigDecimal
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        model.addAttribute("totalValue", totalValue);
         model.addAttribute("transactions", transactions);
         return "transactions";
     }
