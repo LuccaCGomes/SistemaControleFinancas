@@ -1,15 +1,19 @@
 package com.trabalho.controlefinancas.controller;
 
 import com.trabalho.controlefinancas.model.Category;
+import com.trabalho.controlefinancas.model.User;
 import com.trabalho.controlefinancas.repository.CategoryRepository;
 import com.trabalho.controlefinancas.service.CategoryService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Controller
@@ -23,18 +27,32 @@ public class CategoryController {
         return "add-category";
     }
 
+
     @GetMapping("/categories")
-    public String showCategories(Model model) {
-        model.addAttribute("categories", categoryService.getAllCategories());
-        return "categories";
+    public String showCategories(Model model, @AuthenticationPrincipal User user) {
+        if (user == null) {
+            // Caso o usuário não esteja logado, redireciona para a página de login
+            return "redirect:/login";
+        }
+        List<Category> categories = categoryService.getAllCategoriesByUser(user);
+        model.addAttribute("categories", categories);
+        return "categories";  // Nome da view que será renderizada
     }
 
     @PostMapping("/add-category")
     public String addCategory(@RequestParam String name,
                               @RequestParam(required = false) String description,
+                              @RequestParam BigDecimal budget,
+                              @AuthenticationPrincipal User user,
                               RedirectAttributes redirectAttributes) {
+        if (user == null) {
+            // Se o usuário não estiver autenticado, redireciona para a página de login
+            redirectAttributes.addFlashAttribute("error", "User is not authenticated.");
+            return "redirect:/login";  // Direciona para página de login
+        }
         try {
-            Category category = new Category(name, description);
+            Category category = new Category(name, description, budget);
+            category.setUser(user);
             categoryService.addCategory(category);
             redirectAttributes.addFlashAttribute("message", "Category successfully added!");
             return "redirect:/categories";
@@ -42,5 +60,12 @@ public class CategoryController {
             redirectAttributes.addFlashAttribute("error", "Error adding category. The name might already exist.");
             return "redirect:/add-category";
         }
+    }
+
+    @PostMapping("/delete-category/{id}")
+    public String deleteCategory(@PathVariable Long id, Authentication authentication) {
+        System.out.println("Usuário autenticado: " + authentication.getName());
+        categoryService.deleteCategoryById(id);
+        return "redirect:/categories";
     }
 }

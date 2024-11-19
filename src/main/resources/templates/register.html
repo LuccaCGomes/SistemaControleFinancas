@@ -9,12 +9,21 @@
 <body>
 <div class="container">
     <h1>Cadastro</h1>
-    <form action="/register" method="post">
+
+    <div th:if="${error}" class="alert alert-error">
+        <span th:text="${error}"></span>
+    </div>
+
+    <form th:action="@{/register}" method="post">
         <input type="text" name="username" placeholder="Usuário" required/>
         <input type="password" name="password" placeholder="Senha" required/>
         <input type="submit" value="Registrar"/>
     </form>
-    <a href="/" class="back-link">Página Inicial</a>
+    <div class="links">
+        <a th:href="@{/}" class="back-link">Página Inicial</a>
+        <span class="separator">|</span>
+        <a th:href="@{/login}" class="back-link">Login</a>
+    </div>
 </div>
 </body>
 </html>

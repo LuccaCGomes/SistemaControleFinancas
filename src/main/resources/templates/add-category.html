@@ -28,6 +28,15 @@
         <li class="nav-item">
           <a class="nav-link active" th:href="@{/add-category}">Adicionar Categorias</a>
         </li>
+        <li class="nav-item">
+          <a class="nav-link" th:href="@{/categories}">Ver Categorias</a>
+        </li>
+        <li class="nav-item">
+          <form action="/logout" method="POST" style="display: inline;">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+            <button type="submit" class="btn btn-link nav-link" style="color: red; font-weight: bold;">Sair</button>
+          </form>
+        </li>
       </ul>
     </div>
   </div>
@@ -60,7 +69,15 @@
                      placeholder="Digite o nome da categoria">
               <div class="form-text">Nome deve ser único!</div>
             </div>
-
+            <!-- Category Budget -->
+            <div class="mb-3">
+              <label for="name" class="form-label">Orçamento da Categoria</label>
+              <input type="number"
+                     class="form-control"
+                     id="budget"
+                     name="budget"
+                     placeholder="Digite o orçamento da categoria">
+            </div>
             <!-- Category Description -->
             <div class="mb-3">
               <label for="description" class="form-label">Descrição</label>

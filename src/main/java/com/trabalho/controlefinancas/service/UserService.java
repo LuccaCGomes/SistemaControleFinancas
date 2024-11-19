@@ -4,18 +4,43 @@ import com.trabalho.controlefinancas.model.User;
 import com.trabalho.controlefinancas.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
 
 import java.util.Optional;
 
 @Service
-public class UserService {
+public class UserService implements UserDetailsService{
 
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
     public void registerUser(String username, String password) {
-        User user = new User(username, password);
+        User user = new User(username,password);
+        if (userRepository.findByUsername(user.getUsername()).isPresent()) {
+            throw new RuntimeException("Username already exists");
+        }
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
         userRepository.save(user);
+    }
+
+
+    public User findUserByUsername(String username) {
+        if (userRepository.findByUsername(username).isEmpty()) {
+            throw new RuntimeException("Username doesn't exists");
+        }
+        return userRepository.findByUsername(username).get();
+    }
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("Usuário de nome \""+username+ "\" não foi achado"));
     }
 
     public boolean loginUser(String username, String password) {

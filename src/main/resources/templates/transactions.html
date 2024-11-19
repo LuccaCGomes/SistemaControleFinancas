@@ -5,27 +5,37 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body class="bg-light">
+<!-- Nav -->
 <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
     <div class="container">
         <a class="navbar-brand" href="/loggedin">Sistema de Controle Financeiro</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-        <span class="navbar-toggler-icon"></span>
+            <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav ms-auto">
-            <li class="nav-item">
-            <a class="nav-link" th:href="@{/loggedin}">Home</a>
-            </li>
-            <li class="nav-item">
-            <a class="nav-link" th:href="@{/add-transaction}">Adicionar Transação</a>
-            </li>
-            <li class="nav-item">
-            <a class="nav-link active" th:href="@{/transactions}">Ver Transações</a>
-            </li>
-            <li class="nav-item">
-            <a class="nav-link" th:href="@{/add-category}">Adicionar Categorias</a>
-            </li>
-        </ul>
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/loggedin}">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/add-transaction}">Adicionar Transação</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" th:href="@{/transactions}">Ver Transações</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/add-category}">Adicionar Categorias</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/categories}">Ver Categorias</a>
+                </li>
+                <li class="nav-item">
+                    <form action="/logout" method="POST" style="display: inline;">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                        <button type="submit" class="btn btn-link nav-link" style="color: red; font-weight: bold;">Sair</button>
+                    </form>
+                </li>
+            </ul>
         </div>
     </div>
 </nav>
@@ -62,6 +72,7 @@
                     <thead class="table-dark">
                     <tr>
                         <th>Data</th>
+                        <th>Tipo</th>
                         <th>Descrição</th>
                         <th>Categoria</th>
                         <th class="text-end">Valor</th>
@@ -72,6 +83,7 @@
                     <tbody>
                     <tr th:each="transaction : ${transactions}">
                         <td th:text="${#temporals.format(transaction.date, 'dd/MM/yyyy')}"></td>
+                        <td th:text="${transaction.type}"></td>
                         <td th:text="${transaction.description}"></td>
                         <td th:text="${transaction.category.name}"></td>
                         <td class="text-end" th:text="${#numbers.formatDecimal(transaction.amount, 1, 'POINT', 2, 'COMMA')}"></td>
@@ -79,14 +91,14 @@
                         <td>
                             <div class="btn-group btn-group-sm">
                                 <a th:href="@{/transactions/edit/{id}(id=${transaction.id})}"
-                                   class="btn btn-warning">Edit</a>
+                                   class="btn btn-warning">Editar</a>
                                 <button type="button" class="btn btn-danger"
                                         th:onclick="'confirmDelete(' + ${transaction.id} + ')'">Deletar</button>
                             </div>
                         </td>
                     </tr>
                     <tr th:if="${#lists.isEmpty(transactions)}">
-                        <td colspan="5" class="text-center">Nenhuma transação encontrada!</td>
+                        <td colspan="7" class="text-center">Nenhuma transação encontrada!</td>
                     </tr>
                     </tbody>
                     <tfoot th:if="${!#lists.isEmpty(transactions)}">
@@ -95,7 +107,7 @@
                         <td class="text-end">
                             <strong th:text="${#numbers.formatDecimal(totalValue, 1, 'POINT', 2, 'COMMA')}"></strong>
                         </td>
-                        <td></td>
+                        <td colspan="2"></td>
                     </tr>
                     </tfoot>
                 </table>
@@ -118,7 +130,9 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                 <form id="deleteForm" method="post" style="display: inline;">
-                    <button type="submit" class="btn btn-danger">Delete</button>
+                    <!-- CSRF Token -->
+                    <input type="hidden" name="_csrf" th:value="${_csrf.token}"/>
+                    <button type="submit" class="btn btn-danger">Deletar</button>
                 </form>
             </div>
         </div>
@@ -127,12 +141,12 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
 <script>
-        function confirmDelete(id) {
-            const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
-            const deleteForm = document.getElementById('deleteForm');
-            deleteForm.action = `/transactions/delete/${id}`;
-            modal.show();
-        }
-    </script>
+    function confirmDelete(id) {
+        const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+        const deleteForm = document.getElementById('deleteForm');
+        deleteForm.action = `/delete-transaction/${id}`;
+        modal.show();
+    }
+</script>
 </body>
 </html>
