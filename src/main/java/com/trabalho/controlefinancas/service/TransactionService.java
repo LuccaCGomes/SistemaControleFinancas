@@ -12,7 +12,9 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class TransactionService {
@@ -80,5 +82,34 @@ public class TransactionService {
         }
 
         transactionRepository.delete(transaction);
+    }
+
+    public Map<String, BigDecimal> getMonthlyFinancialSummary(User user, int month, int year) {
+        List<Transaction> transactions = transactionRepository.findByUser(user);
+
+        BigDecimal totalIncome = transactions.stream()
+                .filter(t -> t.getType() == TransactionType.RECEITA &&
+                        t.getDate().getMonthValue() == month &&
+                        t.getDate().getYear() == year)
+                .map(Transaction::getAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        BigDecimal totalExpense = transactions.stream()
+                .filter(t -> t.getType() == TransactionType.DESPESA &&
+                        t.getDate().getMonthValue() == month &&
+                        t.getDate().getYear() == year)
+                .map(Transaction::getAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        BigDecimal initialBalance = BigDecimal.ZERO; // Substitua pelo saldo inicial, se aplicável.
+        BigDecimal finalBalance = initialBalance.add(totalIncome).subtract(totalExpense);
+
+        Map<String, BigDecimal> summary = new HashMap<>();
+        summary.put("initialBalance", initialBalance);
+        summary.put("totalIncome", totalIncome);
+        summary.put("totalExpense", totalExpense);
+        summary.put("finalBalance", finalBalance);
+
+        return summary;
     }
 }

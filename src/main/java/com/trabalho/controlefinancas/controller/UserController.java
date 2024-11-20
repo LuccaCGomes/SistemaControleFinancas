@@ -26,11 +26,6 @@ public class UserController {
         return "loggedin";
     }
 
-    @GetMapping("/monitoring")
-    public String monitoring() {
-        return "monitoring";
-    }
-
     @GetMapping("/")
     public String home() {
         return "home";

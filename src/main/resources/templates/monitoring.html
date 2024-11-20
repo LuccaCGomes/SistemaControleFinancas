@@ -47,6 +47,27 @@
   <img src="/cash-flow-chart" alt="Fluxo de Caixa" class="img-fluid">
 </div>
 
+<h1>Resumo Financeiro - Mês Atual</h1>
+<table>
+  <tr>
+    <th>Saldo Inicial</th>
+    <td th:text="${initialBalance}">0.00</td>
+  </tr>
+  <tr>
+    <th>Receitas Totais</th>
+    <td th:text="${totalIncome}">0.00</td>
+  </tr>
+  <tr>
+    <th>Despesas Totais</th>
+    <td th:text="${totalExpense}">0.00</td>
+  </tr>
+  <tr>
+    <th>Saldo Final</th>
+    <td th:text="${finalBalance}">0.00</td>
+  </tr>
+</table>
+<a href="/transactions">Voltar</a>
+
 
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>

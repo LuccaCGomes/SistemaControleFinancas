@@ -149,6 +149,11 @@ public class UserController {
         return "loggedin";
     }
 
+    @GetMapping("/monitoring")
+    public String monitoring() {
+        return "monitoring";
+    }
+
     @GetMapping("/")
     public String home() {
         return "home";
@@ -205,6 +210,55 @@ public class UserController {
 }
 
 
+Arquivo: ./main/java/com/trabalho/controlefinancas/controller/ChartController.java
+package com.trabalho.controlefinancas.controller;
+
+import com.trabalho.controlefinancas.service.ChartService;
+import org.jfree.chart.ChartUtils;
+import org.jfree.chart.JFreeChart;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import com.trabalho.controlefinancas.model.User;
+
+@Controller
+public class ChartController {
+
+    @Autowired
+    private ChartService chartService;
+
+    @GetMapping(value = "/simple-chart", produces = MediaType.IMAGE_PNG_VALUE)
+    @ResponseBody
+    public byte[] getExpenseChart(@AuthenticationPrincipal User user) throws IOException {
+        //System.out.println("Iniciando geração do gráfico para o usuário autenticado: " + user.getUsername());
+
+        JFreeChart chart = chartService.createExpensePieChart(user);
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ChartUtils.writeChartAsPNG(baos, chart, 600, 400);
+        //System.out.println("Gráfico gerado e convertido para PNG com sucesso");
+
+        return baos.toByteArray();
+    }
+
+    @GetMapping(value = "/cash-flow-chart", produces = MediaType.IMAGE_PNG_VALUE)
+    @ResponseBody
+    public byte[] getCashFlowChart(@AuthenticationPrincipal User user) throws IOException {
+        JFreeChart chart = chartService.createCashFlowChart(user);
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ChartUtils.writeChartAsPNG(baos, chart, 600, 400);
+
+        return baos.toByteArray();
+    }
+}
+
+
 Arquivo: ./main/java/com/trabalho/controlefinancas/controller/CategoryController.java
 package com.trabalho.controlefinancas.controller;
 
@@ -250,7 +304,7 @@ public class CategoryController {
     @PostMapping("/add-category")
     public String addCategory(@RequestParam String name,
                               @RequestParam(required = false) String description,
-                              @RequestParam BigDecimal budget,
+                              @RequestParam(required = false) BigDecimal budget,
                               @AuthenticationPrincipal User user,
                               RedirectAttributes redirectAttributes) {
         if (user == null) {
@@ -311,6 +365,12 @@ public class TransactionController {
     @GetMapping("/transactions")
     public String showTransactions(Model model, @AuthenticationPrincipal User user) {
         List<Transaction> transactions = transactionService.getUserTransactions(user);
+
+        BigDecimal totalValue = transactions.stream()
+                .map(Transaction::getAmount) // Assuming `getAmount()` returns BigDecimal
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        model.addAttribute("totalValue", totalValue);
         model.addAttribute("transactions", transactions);
         return "transactions";
     }
@@ -345,21 +405,23 @@ public class TransactionController {
         );
 
         try {
-            transactionService.addTransaction(transaction);
-            redirectAttributes.addFlashAttribute("message", "Transaction added successfully!");
-            return "redirect:/transactions";
+            String errorMessage = transactionService.addTransaction(transaction);
+            if (errorMessage != null) {
+                redirectAttributes.addFlashAttribute("error", errorMessage);
+                return "redirect:/transactions";
+            } else {
+                redirectAttributes.addFlashAttribute("message", "Transação adicionada com sucesso!");
+                return "redirect:/transactions";
+            }
         } catch (BudgetExceededException e) {
-            // Captura a exceção e redireciona com a mensagem de erro
             redirectAttributes.addFlashAttribute("error", e.getMessage());
-            return "redirect:/add-transaction";
+            return "redirect:/transactions";
         }
     }
 
     @PostMapping("/delete-transaction/{id}")
     public String deleteTransaction(@PathVariable Long id, @AuthenticationPrincipal User user) {
-        System.out.println("linha 79");
         transactionService.deleteTransactionByIdAndUser(id, user);
-        System.out.println("linha 81" );
         return "redirect:/transactions";
     }
 }
@@ -478,7 +540,9 @@ public class SecurityConfig {
                         .permitAll()
                 )
                 .logout(logout -> logout
+                        .logoutUrl("/logout")
                         .logoutSuccessUrl("/")
+                        .invalidateHttpSession(true)
                         .permitAll()
                 );
 
@@ -946,12 +1010,125 @@ public class CategoryService {
 
 
 
+Arquivo: ./main/java/com/trabalho/controlefinancas/service/ChartService.java
+package com.trabalho.controlefinancas.service;
+
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.plot.PiePlot;
+import org.jfree.data.general.DefaultPieDataset;
+import com.trabalho.controlefinancas.model.Transaction;
+import com.trabalho.controlefinancas.model.TransactionType;
+import com.trabalho.controlefinancas.model.User;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Date;
+import java.time.ZoneId;
+
+import org.jfree.chart.axis.DateAxis;
+import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
+import org.jfree.data.time.Day;
+import org.jfree.data.time.TimeSeries;
+import org.jfree.data.time.TimeSeriesCollection;
+
+import java.util.Comparator;
+
+@Service
+public class ChartService {
+
+    @Autowired
+    private TransactionService transactionService;
+
+    public JFreeChart createExpensePieChart(User user) {
+        List<Transaction> transactions = transactionService.getUserTransactions(user);
+
+        // Utiliza um Map temporário para acumular os valores das categorias
+        Map<String, Double> tempCategoryAmounts = new HashMap<>();
+
+        transactions.stream()
+                .filter(transaction -> transaction.getType() == TransactionType.DESPESA)
+                .forEach(transaction -> {
+                    String categoryName = transaction.getCategory().getName();
+                    BigDecimal amount = transaction.getAmount();
+
+                    // Se já existe um valor para a categoria, soma o valor da transação
+                    double currentAmount = tempCategoryAmounts.getOrDefault(categoryName, 0.0);
+                    tempCategoryAmounts.put(categoryName, currentAmount + amount.doubleValue());
+                });
+
+        // Cria o dataset final usando os valores acumulados no Map
+        DefaultPieDataset dataset = new DefaultPieDataset();
+        tempCategoryAmounts.forEach((category, totalAmount) -> {
+            dataset.setValue(category, totalAmount);
+        });
+
+        // Cria o gráfico de pizza com os dados do dataset
+        JFreeChart chart = ChartFactory.createPieChart(
+                "Distribuição de Despesas", // Título
+                dataset,                   // Dataset
+                true,                       // Legenda visível
+                true,                       // Tooltips ativados
+                false                       // URLs desativadas
+        );
+
+        // Ajusta o gráfico (exemplo: remove contornos das fatias)
+        PiePlot plot = (PiePlot) chart.getPlot();
+        plot.setSectionOutlinesVisible(false);
+
+        return chart; // Retorna o gráfico gerado
+    }
+
+    public JFreeChart createCashFlowChart(User user) {
+        List<Transaction> transactions = transactionService.getUserTransactions(user);
+
+        // Ordenar transações por data
+        transactions.sort(Comparator.comparing(Transaction::getDate));
+
+        // Cria a série de dados para o gráfico
+        TimeSeries series = new TimeSeries("Saldo Acumulado");
+        BigDecimal saldoAcumulado = BigDecimal.ZERO;
+
+        for (Transaction transaction : transactions) {
+            BigDecimal valor = transaction.getType() == TransactionType.RECEITA
+                    ? transaction.getAmount()
+                    : transaction.getAmount().negate();
+            saldoAcumulado = saldoAcumulado.add(valor);
+
+            // Adiciona o saldo acumulado à série
+            Date date = Date.from(transaction.getDate().atStartOfDay(ZoneId.systemDefault()).toInstant());
+            series.addOrUpdate(new Day(date), saldoAcumulado.doubleValue());
+        }
+
+        // Adiciona a série ao conjunto de dados
+        TimeSeriesCollection dataset = new TimeSeriesCollection(series);
+
+        // Configura o gráfico
+        XYPlot plot = new XYPlot(
+                dataset,
+                new DateAxis("Data"),
+                new NumberAxis("Saldo Acumulado"),
+                new XYLineAndShapeRenderer(true, false)
+        );
+
+        return new JFreeChart("Fluxo de Caixa", JFreeChart.DEFAULT_TITLE_FONT, plot, true);
+    }
+}
+
+
 Arquivo: ./main/java/com/trabalho/controlefinancas/service/TransactionService.java
 package com.trabalho.controlefinancas.service;
 
 import com.trabalho.controlefinancas.exception.BudgetExceededException;
 import com.trabalho.controlefinancas.model.Category;
 import com.trabalho.controlefinancas.model.Transaction;
+import com.trabalho.controlefinancas.model.TransactionType;
 import com.trabalho.controlefinancas.model.User;
 import com.trabalho.controlefinancas.repository.TransactionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -959,6 +1136,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -975,31 +1153,54 @@ public class TransactionService {
 //        return transactionRepository.save(transaction);
 //    }
 
-    public Transaction addTransaction(Transaction transaction) {
+    public String addTransaction(Transaction transaction) {
         Category category = transaction.getCategory();
         User user = transaction.getUser();
 
-        // Verifica se a soma das transações da categoria do usuário está abaixo do orçamento
+        // Obtém o mês e o ano da transação
+        LocalDate transactionDate = transaction.getDate();
+        int month = transactionDate.getMonthValue();
+        int year = transactionDate.getYear();
+
+
+        // Salva a transação mesmo se exceder o limite do mês
+        transactionRepository.save(transaction);
+
+        if (transaction.getType() == TransactionType.RECEITA || category.getBudget() == null) return null;
+        // se for Receita ou budget não existir
+        // o limite do mês não precisa ser calculado
+
+
         BigDecimal totalTransactionsAmount = transactionRepository
                 .findByCategoryAndUser(category, user)
                 .stream()
+                .filter(t -> t.getDate().getMonthValue() == month
+                        && t.getDate().getYear() == year
+                        && t.getType() == TransactionType.DESPESA
+                ) // Verifica o mesmo mês, ano e se é uma Despesa
                 .map(Transaction::getAmount)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         BigDecimal newTotal = totalTransactionsAmount.add(transaction.getAmount());
 
+
+
         if (newTotal.compareTo(category.getBudget()) > 0) {
-            throw new BudgetExceededException("Adding this transaction exceeds the budget limit for the category.");
+
+            return "O valor das transações para a categoria " + category.getName() + " excedeu o orçamento mensal.";
         }
 
-        return transactionRepository.save(transaction);
+        return null;
     }
+
 
     public void deleteTransactionByIdAndUser(Long id, User user) {
         Transaction transaction = transactionRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Transaction not found"));
 
-        if (!transaction.getUser().getId().equals(user.getId())) {
+        if (!transaction.getUser()
+                .getId()
+                .equals(user.getId())) {
             throw new AccessDeniedException("Not authorized to delete this transaction");
         }
 
