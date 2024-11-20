@@ -75,7 +75,6 @@
         <table class="table table-hover">
           <thead class="table-light">
           <tr>
-            <th>ID</th>
             <th>Nome</th>
             <th>Orçamento</th>
             <th>Descrição</th>
@@ -85,7 +84,6 @@
           </thead>
           <tbody>
           <tr th:each="category : ${categories}">
-            <td th:text="${category.id}"></td>
             <td th:text="${category.name}"></td>
             <td th:text="${category.budget != null ? #numbers.formatDecimal(category.budget, 1, 'POINT', 2, 'COMMA') : 'N/A'}"></td>
             <td th:text="${category.description != null ? category.description : 'N/A'}"></td>

@@ -3,6 +3,7 @@ package com.trabalho.controlefinancas.service;
 import com.trabalho.controlefinancas.exception.BudgetExceededException;
 import com.trabalho.controlefinancas.model.Category;
 import com.trabalho.controlefinancas.model.Transaction;
+import com.trabalho.controlefinancas.model.TransactionType;
 import com.trabalho.controlefinancas.model.User;
 import com.trabalho.controlefinancas.repository.TransactionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,17 +37,28 @@ public class TransactionService {
         int month = transactionDate.getMonthValue();
         int year = transactionDate.getYear();
 
+
+        // Salva a transação mesmo se exceder o limite do mês
+        transactionRepository.save(transaction);
+
+        if (transaction.getType() == TransactionType.RECEITA || category.getBudget() == null) return null;
+        // se for Receita ou budget não existir
+        // o limite do mês não precisa ser calculado
+
+
         BigDecimal totalTransactionsAmount = transactionRepository
                 .findByCategoryAndUser(category, user)
                 .stream()
-                .filter(t -> t.getDate().getMonthValue() == month && t.getDate().getYear() == year) // Verifica o mesmo mês e ano
+                .filter(t -> t.getDate().getMonthValue() == month
+                        && t.getDate().getYear() == year
+                        && t.getType() == TransactionType.DESPESA
+                ) // Verifica o mesmo mês, ano e se é uma Despesa
                 .map(Transaction::getAmount)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         BigDecimal newTotal = totalTransactionsAmount.add(transaction.getAmount());
 
-        // Salva a transação mesmo se exceder o limite do mês
-        transactionRepository.save(transaction);
+
 
         if (newTotal.compareTo(category.getBudget()) > 0) {
 
@@ -61,7 +73,9 @@ public class TransactionService {
         Transaction transaction = transactionRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Transaction not found"));
 
-        if (!transaction.getUser().getId().equals(user.getId())) {
+        if (!transaction.getUser()
+                .getId()
+                .equals(user.getId())) {
             throw new AccessDeniedException("Not authorized to delete this transaction");
         }
 
