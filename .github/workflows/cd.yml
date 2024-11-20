@@ -33,18 +33,12 @@ jobs:
         run: |
           mvn clean package jacoco:report
 
-      # Copiar os relatórios gerados para o diretório staging
+      # Preparar os relatórios gerados para o deployment
       - name: Prepare Coverage Report for Deployment
-        run: mkdir staging && cp -r target/site/jacoco staging/
+        run: mkdir -p staging/jacoco && cp -r target/site/jacoco/* staging/jacoco/
 
-      # Fazer o upload do relatório gerado como artefato
-      - uses: actions/upload-artifact@v4
-        with:
-          name: Coverage Report
-          path: staging
-
-      # Deploy do relatório no branch "cov"
-      - name: Deploy Coverage Reports to gh-pages
+      # Deploy para o branch "cov"
+      - name: Deploy Coverage Reports to cov branch
         uses: peaceiris/actions-gh-pages@v3.9.3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
