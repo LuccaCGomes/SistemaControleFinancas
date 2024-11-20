@@ -32,4 +32,15 @@ public class ChartController {
 
         return baos.toByteArray();
     }
+
+    @GetMapping(value = "/cash-flow-chart", produces = MediaType.IMAGE_PNG_VALUE)
+    @ResponseBody
+    public byte[] getCashFlowChart(@AuthenticationPrincipal User user) throws IOException {
+        JFreeChart chart = chartService.createCashFlowChart(user);
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ChartUtils.writeChartAsPNG(baos, chart, 600, 400);
+
+        return baos.toByteArray();
+    }
 }
