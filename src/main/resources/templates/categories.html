@@ -45,30 +45,17 @@
 </nav>
 
 <!-- Main Content -->
-<div class="container mt-5">
-  <img src="/simple-chart" alt="Gráfico de Despesas">
-  <!-- Success/Error Messages -->
-  <div class="alert alert-success alert-dismissible fade show" role="alert" th:if="${message}">
-    <span th:text="${message}"></span>
-    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+
+<div class="row mb-4">
+  <div class="col">
+    <h2>Categorias</h2>
   </div>
-  <div class="col-md-6">
-    <h3>Fluxo de Caixa</h3>
-    <img src="/cash-flow-chart" alt="Fluxo de Caixa" class="img-fluid">
+  <div class="col text-end">
+    <a th:href="@{/add-category}" class="btn btn-primary">
+      <i class="fas fa-plus"></i> Adicionar nova Categoria
+    </a>
   </div>
 </div>
-
-  <div class="row mb-4">
-    <div class="col">
-      <h2>Categorias</h2>
-    </div>
-    <div class="col text-end">
-      <a th:href="@{/add-category}" class="btn btn-primary">
-        <i class="fas fa-plus"></i> Adicionar nova Categoria
-      </a>
-    </div>
-  </div>
-
   <!-- Categories List -->
   <div class="card">
     <div class="card-body">
