@@ -1,13 +1,11 @@
-name: Deploy Coverage Reports
-
+name: Publish coverage reports
 on:
   workflow_run:
-    workflows: ["CI"] # Nome do workflow de CI
+    workflows: ["Unit tests"]
     branches:
-      - '**' # Aciona para qualquer branch
+      - master
     types:
       - completed
-
 jobs:
   deploy-coverage:
     name: Deploy Coverage Reports
@@ -16,35 +14,21 @@ jobs:
     permissions:
       contents: write
     steps:
-      # Checkout do repositório
       - name: Checkout
         uses: actions/checkout@v4
-
-      # Configurar o JDK 17
-      - name: Set up JDK 17
+      - name: Set up JDK 17 for x64
         uses: actions/setup-java@v4
         with:
           java-version: '17'
-          distribution: 'temurin' # Alterado para corresponder ao seu projeto
+          distribution: 'corretto'
           architecture: x64
-
-      # Compilar e gerar o relatório de cobertura
-      - name: Build and Generate Coverage Report
-        run: |
-          mvn clean package jacoco:report
-
-      # Copiar os relatórios gerados para o diretório staging
       - run: mvn package
-      - run: mkdir staging && cp -r target/site/jacoco staging/
-
-      # Fazer o upload do relatório gerado como artefato
+      - run: mkdir staging && cp target/*.jar staging
       - uses: actions/upload-artifact@v4
         with:
-          name: Coverage Report
+          name: Package
           path: staging
-
-      # Deploy do relatório no branch "cov"
-      - name: Deploy Coverage Reports documentation
+      - name: Deploy Coverage reports documentation
         uses: peaceiris/actions-gh-pages@v3.9.3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
