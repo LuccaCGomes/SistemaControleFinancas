@@ -49,9 +49,6 @@
                     <h2 class="text-center mb-0">Adicionar nova Transação</h2>
                 </div>
                 <div class="card-body">
-                    <div th:if="${error}" class="alert alert-danger" role="alert">
-                        <p th:text="${error}"></p>
-                    </div>
                     <form th:action="@{/add-transaction}" method="post">
                         <div class="mb-3">
                             <label for="type" class="form-label">Tipo</label>
