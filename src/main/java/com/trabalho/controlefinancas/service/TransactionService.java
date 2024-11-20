@@ -87,6 +87,12 @@ public class TransactionService {
     public Map<String, BigDecimal> getMonthlyFinancialSummary(User user, int month, int year) {
         List<Transaction> transactions = transactionRepository.findByUser(user);
 
+        // Calcular o saldo inicial (todas as receitas - despesas até o último dia do mês anterior)
+        BigDecimal initialBalance = transactions.stream()
+                .filter(t -> t.getDate().isBefore(LocalDate.of(year, month, 1)))
+                .map(t -> t.getType() == TransactionType.RECEITA ? t.getAmount() : t.getAmount().negate())
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
         BigDecimal totalIncome = transactions.stream()
                 .filter(t -> t.getType() == TransactionType.RECEITA &&
                         t.getDate().getMonthValue() == month &&
@@ -101,7 +107,6 @@ public class TransactionService {
                 .map(Transaction::getAmount)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        BigDecimal initialBalance = BigDecimal.ZERO; // Substitua pelo saldo inicial, se aplicável.
         BigDecimal finalBalance = initialBalance.add(totalIncome).subtract(totalExpense);
 
         Map<String, BigDecimal> summary = new HashMap<>();
