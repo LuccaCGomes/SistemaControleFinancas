@@ -14,6 +14,18 @@ import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Date;
+import java.time.ZoneId;
+
+import org.jfree.chart.axis.DateAxis;
+import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
+import org.jfree.data.time.Day;
+import org.jfree.data.time.TimeSeries;
+import org.jfree.data.time.TimeSeriesCollection;
+
+import java.util.Comparator;
 
 @Service
 public class ChartService {
@@ -58,5 +70,40 @@ public class ChartService {
         plot.setSectionOutlinesVisible(false);
 
         return chart; // Retorna o gráfico gerado
+    }
+
+    public JFreeChart createCashFlowChart(User user) {
+        List<Transaction> transactions = transactionService.getUserTransactions(user);
+
+        // Ordenar transações por data
+        transactions.sort(Comparator.comparing(Transaction::getDate));
+
+        // Cria a série de dados para o gráfico
+        TimeSeries series = new TimeSeries("Saldo Acumulado");
+        BigDecimal saldoAcumulado = BigDecimal.ZERO;
+
+        for (Transaction transaction : transactions) {
+            BigDecimal valor = transaction.getType() == TransactionType.RECEITA
+                    ? transaction.getAmount()
+                    : transaction.getAmount().negate();
+            saldoAcumulado = saldoAcumulado.add(valor);
+
+            // Adiciona o saldo acumulado à série
+            Date date = Date.from(transaction.getDate().atStartOfDay(ZoneId.systemDefault()).toInstant());
+            series.addOrUpdate(new Day(date), saldoAcumulado.doubleValue());
+        }
+
+        // Adiciona a série ao conjunto de dados
+        TimeSeriesCollection dataset = new TimeSeriesCollection(series);
+
+        // Configura o gráfico
+        XYPlot plot = new XYPlot(
+                dataset,
+                new DateAxis("Data"),
+                new NumberAxis("Saldo Acumulado"),
+                new XYLineAndShapeRenderer(true, false)
+        );
+
+        return new JFreeChart("Fluxo de Caixa", JFreeChart.DEFAULT_TITLE_FONT, plot, true);
     }
 }
