@@ -1,13 +1,11 @@
-name: Deploy Coverage Reports
-
+name: Deploy coverage reports
 on:
   workflow_run:
-    workflows: ["CI - Java Spring Boot"] # Nome do workflow de CI
+    workflows: ["CI - Java Spring Boot"]
     branches:
-      - '**' # Aciona para qualquer branch
+      - feat/adiciona-ci-cd
     types:
       - completed
-
 jobs:
   deploy-coverage:
     name: Deploy Coverage Reports
@@ -16,31 +14,23 @@ jobs:
     permissions:
       contents: write
     steps:
-      # Checkout do repositório
       - name: Checkout
         uses: actions/checkout@v4
-
-      # Configurar o JDK 17
       - name: Set up JDK 17 for x64
         uses: actions/setup-java@v4
         with:
           java-version: '17'
-          distribution: 'temurin'
+          distribution: 'corretto'
           architecture: x64
-
-      # Compilar e gerar o relatório de cobertura
-      - name: Build and Generate Coverage Report
-        run: |
-          mvn clean package jacoco:report
-
-      # Preparar os relatórios gerados para o deployment
-      - name: Prepare Coverage Report for Deployment
-        run: mkdir -p staging/jacoco && cp -r target/site/jacoco/* staging/jacoco/
-
-      # Deploy para o branch "cov"
-      - name: Deploy Coverage Reports to cov branch
+      - run: mvn package
+      - run: mkdir staging && cp target/*.jar staging
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Package
+          path: staging
+      - name: Deploy Coverage reports documentation
         uses: peaceiris/actions-gh-pages@v3.9.3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_branch: cov
-          publish_dir: staging/jacoco
+          publish_dir: target/site/jacoco
