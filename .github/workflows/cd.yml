@@ -2,7 +2,7 @@ name: Deploy Coverage Reports
 
 on:
   workflow_run:
-    workflows: ["CI"] # Nome do workflow de CI
+    workflows: ["CI"] # Nome correto do workflow de CI
     branches:
       - '**' # Aciona para qualquer branch
     types:
@@ -12,10 +12,15 @@ jobs:
   deploy-coverage:
     name: Deploy Coverage Reports
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    if: ${{ github.event.workflow_run.conclusion == 'success' }} # Apenas se o CI for bem-sucedido
     permissions:
       contents: write
     steps:
+      # Log para depuração: Verifica o status do evento `workflow_run`
+      - name: Log event data
+        run:
+          echo "Event data: ${{ github.event }}"
+
       # Checkout do repositório
       - name: Checkout
         uses: actions/checkout@v4
