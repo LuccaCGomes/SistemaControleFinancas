@@ -1,7 +1,12 @@
 name: Publish Coverage Reports
 
 on:
-  workflow_dispatch:
+  push:
+    branches:
+      - developer
+  pull_request:
+    branches:
+      - developer
 jobs:
   deploy-coverage:
     name: Deploy Coverage Reports
