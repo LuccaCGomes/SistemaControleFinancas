@@ -1,9 +1,7 @@
 name: Unit tests
 
 on:
-  push:
-    branches:
-      - feat/adiciona-cd
+  push
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -29,8 +27,4 @@ jobs:
       - name: Run Unit Tests
         run: mvn --batch-mode test
 
-      - name: Trigger Deploy Coverage Reports Workflow
-        run: |
-          curl -X POST https://api.github.com/LuccaCGomes/${{ github.repository }}/dispatches \
-          -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-          -d '{"event_type": "trigger-deploy-coverage"}'
+
