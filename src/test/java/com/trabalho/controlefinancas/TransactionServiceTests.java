@@ -33,7 +33,7 @@ class TransactionServiceTest {
     private TransactionService transactionService;
 
     @Test
-    void testGetUserTransactions() {
+    void getTransacoesUser() {
         User user = new User();
         Transaction transaction1 = new Transaction();
         Transaction transaction2 = new Transaction();
@@ -48,7 +48,7 @@ class TransactionServiceTest {
     }
 
     @Test
-    void testAddTransactionWithinBudget() {
+    void addTransacaoDentroOrcamento() {
         User user = new User();
         Category category = new Category();
         category.setBudget(new BigDecimal("500"));
@@ -70,7 +70,7 @@ class TransactionServiceTest {
     }
 
     @Test
-    void testAddTransactionExceedsBudget() {
+    void addTransacaoUltrapassaOrcamento() {
         User user = new User();
         Category category = new Category();
         category.setBudget(new BigDecimal("300"));
@@ -97,7 +97,7 @@ class TransactionServiceTest {
     }
 
     @Test
-    void testDeleteTransactionByIdAndUserAuthorized() {
+    void deletaTransacaoPorIdUserAutorizado() {
         User user = new User();
         user.setId(1L);
 
@@ -113,7 +113,7 @@ class TransactionServiceTest {
     }
 
     @Test
-    void testDeleteTransactionByIdAndUserUnauthorized() {
+    void deletaTransacaoPorIdUserDesautorizado() {
         User user = new User();
         user.setId(1L);
 
@@ -133,8 +133,7 @@ class TransactionServiceTest {
 
 
     @Test
-    void testGetMonthlyFinancialSummary() {
-        // Mock transactions
+    void getFinancasMensal() {
         User user = new User();
         user.setId(1L);
 

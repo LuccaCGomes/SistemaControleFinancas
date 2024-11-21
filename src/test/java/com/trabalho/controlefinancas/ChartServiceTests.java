@@ -44,7 +44,7 @@ class ChartServiceTests {
     }
 
     @Test
-    void testCreateExpensePieChart() {
+    void criaGraficoTortaDespesas() {
         // Mock de transações
         Transaction transaction1 = new Transaction();
         transaction1.setType(TransactionType.DESPESA);
@@ -63,18 +63,15 @@ class ChartServiceTests {
 
         when(transactionService.getUserTransactions(user)).thenReturn(Arrays.asList(transaction1, transaction2, transaction3));
 
-        // Gera o gráfico
         JFreeChart chart = chartService.createExpensePieChart(user);
 
-        // Verificações
         assertNotNull(chart);
         assertEquals("Distribuição de Despesas", chart.getTitle().getText());
         verify(transactionService, times(1)).getUserTransactions(user);
     }
 
     @Test
-    void testCreateCashFlowChart() {
-        // Mock de transações
+    void criaGraficoFluxo() {
         Transaction transaction1 = new Transaction();
         transaction1.setType(TransactionType.RECEITA);
         transaction1.setAmount(new BigDecimal("500"));
@@ -92,10 +89,8 @@ class ChartServiceTests {
 
         when(transactionService.getUserTransactions(user)).thenReturn(Arrays.asList(transaction1, transaction2, transaction3));
 
-        // Gera o gráfico
         JFreeChart chart = chartService.createCashFlowChart(user);
 
-        // Verificações
         assertNotNull(chart);
         assertEquals("Fluxo de Caixa", chart.getTitle().getText());
         verify(transactionService, times(1)).getUserTransactions(user);

@@ -64,7 +64,7 @@ class CategoryServiceTests {
     }
 
     @Test
-    void addCategoria_NullUserThrowsException() {
+    void addCategoria_LancaExcecaoUserNull() {
         category.setUser(null);
 
         Exception exception = assertThrows(IllegalArgumentException.class, () -> {
