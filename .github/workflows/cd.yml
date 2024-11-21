@@ -4,9 +4,7 @@ on:
   push:
     branches:
       - developer
-  pull_request:
-    branches:
-      - developer
+  workflow_dispatch:
 jobs:
   deploy-coverage:
     name: Deploy Coverage Reports
