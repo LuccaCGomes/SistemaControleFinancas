@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CategoryController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Archetype - com.trabalho.controlefinancas</a> &gt; <a href="index.source.html" class="el_package">com.trabalho.controlefinancas.controller</a> &gt; <span class="el_source">CategoryController.java</span></div><h1>CategoryController.java</h1><pre class="source lang-java linenums">package com.trabalho.controlefinancas.controller;
+
+import com.trabalho.controlefinancas.model.Category;
+import com.trabalho.controlefinancas.model.User;
+import com.trabalho.controlefinancas.repository.CategoryRepository;
+import com.trabalho.controlefinancas.service.CategoryService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import java.math.BigDecimal;
+import java.util.List;
+
+@Controller
+<span class="fc" id="L20">public class CategoryController {</span>
+
+    @Autowired
+    private CategoryService categoryService;
+
+    @GetMapping(&quot;/add-category&quot;)
+    public String showAddCategoryForm() {
+<span class="nc" id="L27">        return &quot;add-category&quot;;</span>
+    }
+
+
+    @GetMapping(&quot;/categories&quot;)
+    public String showCategories(Model model, @AuthenticationPrincipal User user) {
+<span class="nc bnc" id="L33" title="All 2 branches missed.">        if (user == null) {</span>
+            // Caso o usuário não esteja logado, redireciona para a página de login
+<span class="nc" id="L35">            return &quot;redirect:/login&quot;;</span>
+        }
+<span class="nc" id="L37">        List&lt;Category&gt; categories = categoryService.getAllCategoriesByUser(user);</span>
+<span class="nc" id="L38">        model.addAttribute(&quot;categories&quot;, categories);</span>
+<span class="nc" id="L39">        return &quot;categories&quot;;  // Nome da view que será renderizada</span>
+    }
+
+    @PostMapping(&quot;/add-category&quot;)
+    public String addCategory(@RequestParam String name,
+                              @RequestParam(required = false) String description,
+                              @RequestParam(required = false) BigDecimal budget,
+                              @AuthenticationPrincipal User user,
+                              RedirectAttributes redirectAttributes) {
+<span class="nc bnc" id="L48" title="All 2 branches missed.">        if (user == null) {</span>
+            // Se o usuário não estiver autenticado, redireciona para a página de login
+<span class="nc" id="L50">            redirectAttributes.addFlashAttribute(&quot;error&quot;, &quot;User is not authenticated.&quot;);</span>
+<span class="nc" id="L51">            return &quot;redirect:/login&quot;;  // Direciona para página de login</span>
+        }
+        try {
+<span class="nc" id="L54">            Category category = new Category(name, description, budget);</span>
+<span class="nc" id="L55">            category.setUser(user);</span>
+<span class="nc" id="L56">            categoryService.addCategory(category);</span>
+<span class="nc" id="L57">            redirectAttributes.addFlashAttribute(&quot;message&quot;, &quot;Category successfully added!&quot;);</span>
+<span class="nc" id="L58">            return &quot;redirect:/categories&quot;;</span>
+<span class="nc" id="L59">        } catch (Exception e) {</span>
+<span class="nc" id="L60">            redirectAttributes.addFlashAttribute(&quot;error&quot;, &quot;Error adding category. The name might already exist.&quot;);</span>
+<span class="nc" id="L61">            return &quot;redirect:/add-category&quot;;</span>
+        }
+    }
+
+    @PostMapping(&quot;/delete-category/{id}&quot;)
+    public String deleteCategory(@PathVariable Long id, Authentication authentication) {
+<span class="nc" id="L67">        System.out.println(&quot;Usuário autenticado: &quot; + authentication.getName());</span>
+<span class="nc" id="L68">        categoryService.deleteCategoryById(id);</span>
+<span class="nc" id="L69">        return &quot;redirect:/categories&quot;;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

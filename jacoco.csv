@@ -1,0 +1,18 @@
+GROUP,PACKAGE,CLASS,INSTRUCTION_MISSED,INSTRUCTION_COVERED,BRANCH_MISSED,BRANCH_COVERED,LINE_MISSED,LINE_COVERED,COMPLEXITY_MISSED,COMPLEXITY_COVERED,METHOD_MISSED,METHOD_COVERED
+Archetype - com.trabalho.controlefinancas,com.trabalho.controlefinancas.service,CategoryService,129,0,16,0,29,0,16,0,8,0
+Archetype - com.trabalho.controlefinancas,com.trabalho.controlefinancas.service,ChartService,170,0,6,0,34,0,9,0,6,0
+Archetype - com.trabalho.controlefinancas,com.trabalho.controlefinancas.service,TransactionService,249,0,28,0,53,0,25,0,11,0
+Archetype - com.trabalho.controlefinancas,com.trabalho.controlefinancas.service,UserService,86,0,8,0,14,0,10,0,6,0
+Archetype - com.trabalho.controlefinancas,com.trabalho.controlefinancas,ControleFinancasApplication,5,3,0,0,2,1,1,1,1,1
+Archetype - com.trabalho.controlefinancas,com.trabalho.controlefinancas.exception,BudgetExceededException,4,0,0,0,2,0,1,0,1,0
+Archetype - com.trabalho.controlefinancas,com.trabalho.controlefinancas.model,UserRole,15,0,0,0,3,0,1,0,1,0
+Archetype - com.trabalho.controlefinancas,com.trabalho.controlefinancas.model,User,75,0,0,0,28,0,16,0,16,0
+Archetype - com.trabalho.controlefinancas,com.trabalho.controlefinancas.model,Transaction,83,0,0,0,35,0,18,0,18,0
+Archetype - com.trabalho.controlefinancas,com.trabalho.controlefinancas.model,Category,144,0,0,0,48,0,20,0,20,0
+Archetype - com.trabalho.controlefinancas,com.trabalho.controlefinancas.model,TransactionType,15,0,0,0,3,0,1,0,1,0
+Archetype - com.trabalho.controlefinancas,com.trabalho.controlefinancas.config,SecurityConfig,106,0,0,0,22,0,8,0,8,0
+Archetype - com.trabalho.controlefinancas,com.trabalho.controlefinancas.controller,ChartController,37,0,0,0,9,0,3,0,3,0
+Archetype - com.trabalho.controlefinancas,com.trabalho.controlefinancas.controller,UserController,115,0,2,0,30,0,8,0,7,0
+Archetype - com.trabalho.controlefinancas,com.trabalho.controlefinancas.controller,TransactionController,92,0,2,0,25,0,6,0,5,0
+Archetype - com.trabalho.controlefinancas,com.trabalho.controlefinancas.controller,ResumeController,48,0,0,0,10,0,2,0,2,0
+Archetype - com.trabalho.controlefinancas,com.trabalho.controlefinancas.controller,CategoryController,67,3,4,0,20,1,6,1,4,1
