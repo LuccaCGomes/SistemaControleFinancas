@@ -1,12 +1,8 @@
 name: Publish Coverage Reports
 
 on:
-  workflow_run:
-    workflows: [Unit tests]
-    branches: [feat/adiciona-cd]
-    types:
-      - completed
-
+  repository_dispatch:
+    types: [trigger-deploy-coverage]
 jobs:
   deploy-coverage:
     name: Deploy Coverage Reports
