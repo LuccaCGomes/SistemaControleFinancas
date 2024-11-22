@@ -42,7 +42,7 @@ public class CategoryController {
     @PostMapping("/add-category")
     public String addCategory(@RequestParam String name,
                               @RequestParam(required = false) String description,
-                              @RequestParam BigDecimal budget,
+                              @RequestParam(required = false) BigDecimal budget,
                               @AuthenticationPrincipal User user,
                               RedirectAttributes redirectAttributes) {
         if (user == null) {

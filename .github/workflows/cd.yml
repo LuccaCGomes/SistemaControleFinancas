@@ -1,0 +1,37 @@
+name: Publish Coverage Reports
+
+on:
+  workflow_run:
+    workflows: [Unit tests]
+    branches: [main]
+    types:
+      - completed
+
+jobs:
+  deploy-coverage:
+    name: Deploy Coverage Reports
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17 for x64
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'corretto'
+          architecture: x64
+
+      - name: Build and Generate Coverage Report
+        run: |
+          mvn clean package jacoco:report
+
+      - name: Deploy Coverage Reports Documentation
+        uses: peaceiris/actions-gh-pages@v3.9.3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: cov
+          publish_dir: target/site/jacoco

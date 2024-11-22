@@ -70,21 +70,23 @@ public class TransactionController {
         );
 
         try {
-            transactionService.addTransaction(transaction);
-            redirectAttributes.addFlashAttribute("message", "Transaction added successfully!");
-            return "redirect:/transactions";
+            String errorMessage = transactionService.addTransaction(transaction);
+            if (errorMessage != null) {
+                redirectAttributes.addFlashAttribute("error", errorMessage);
+                return "redirect:/transactions";
+            } else {
+                redirectAttributes.addFlashAttribute("message", "Transação adicionada com sucesso!");
+                return "redirect:/transactions";
+            }
         } catch (BudgetExceededException e) {
-            // Captura a exceção e redireciona com a mensagem de erro
             redirectAttributes.addFlashAttribute("error", e.getMessage());
-            return "redirect:/add-transaction";
+            return "redirect:/transactions";
         }
     }
 
     @PostMapping("/delete-transaction/{id}")
     public String deleteTransaction(@PathVariable Long id, @AuthenticationPrincipal User user) {
-        System.out.println("linha 79");
         transactionService.deleteTransactionByIdAndUser(id, user);
-        System.out.println("linha 81" );
         return "redirect:/transactions";
     }
 }

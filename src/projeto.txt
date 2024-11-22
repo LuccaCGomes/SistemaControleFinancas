@@ -1,0 +1,1262 @@
+Arquivo: ./test/java/com/trabalho/controlefinancas/CategoryControllerTests.java
+package com.trabalho.controlefinancas;
+
+import com.trabalho.controlefinancas.controller.CategoryController;
+import com.trabalho.controlefinancas.service.CategoryService;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.web.servlet.MockMvc;
+
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
+
+@WebMvcTest(CategoryController.class)
+public class CategoryControllerTests {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Test
+    void contextLoads() {
+        // Este teste irá verificar se o contexto do Spring carrega corretamente
+    }
+
+    @MockBean
+    private CategoryService categoryService;
+}
+
+
+Arquivo: ./test/java/com/trabalho/controlefinancas/DataInitializerTests.java
+//package com.trabalho.controlefinancas;
+//
+//import com.trabalho.controlefinancas.initializer.DataInitializer;
+//import com.trabalho.controlefinancas.model.Category;
+//import com.trabalho.controlefinancas.repository.CategoryRepository;
+//import org.junit.jupiter.api.BeforeEach;
+//import org.junit.jupiter.api.Test;
+//import org.springframework.beans.factory.annotation.Autowired;
+//import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+//import org.springframework.context.annotation.Import;
+//
+//import static org.assertj.core.api.Assertions.assertThat;
+//
+//@DataJpaTest
+//@Import(DataInitializer.class) // Importa o DataInitializer para ser testado
+//public class DataInitializerTests {
+//
+//    @Autowired
+//    private CategoryRepository repository;
+//
+//    @Autowired
+//    private DataInitializer dataInitializer;
+//
+//    @BeforeEach
+//    public void setup() {
+//        repository.deleteAll(); // Limpa o repositório antes de cada teste para garantir consistência
+//    }
+//
+////    @Test
+////    public void testRunShouldInitializeDataWhenRepositoryIsEmpty() throws Exception {
+////        // Executa o método run para inicializar os dados
+////        dataInitializer.run(null);
+////
+////        // Verifica se as categorias foram salvas corretamente
+////        assertThat(repository.count()).isEqualTo(4); // Espera 4 categorias
+////
+////        // Verifica se uma categoria específica existe
+////        assertThat(repository.findByUser("Alimentação")).isNotNull();
+////        assertThat(repository.findByUser("Transporte")).isNotNull();
+////        assertThat(repository.findByUser("Saúde")).isNotNull();
+////        assertThat(repository.findByUser("Salário")).isNotNull();
+////    }
+//
+//    @Test
+//    public void testRunShouldNotInitializeDataWhenRepositoryIsNotEmpty() throws Exception {
+//        // Configura o repositório com dados iniciais
+//        repository.save(new Category("Teste", "Categoria de teste"));
+//
+//        // Executa o método run novamente
+//        dataInitializer.run(null);
+//
+//        // Verifica que a contagem ainda é 1, pois o DataInitializer não deve adicionar novas categorias
+//        assertThat(repository.count()).isEqualTo(1);
+//    }
+//}
+
+Arquivo: ./main/java/com/trabalho/controlefinancas/initializer/DataInitializer.java
+//package com.trabalho.controlefinancas.initializer;
+//
+//import com.trabalho.controlefinancas.model.Category;
+//import com.trabalho.controlefinancas.repository.CategoryRepository;
+//import org.springframework.boot.ApplicationArguments;
+//import org.springframework.boot.ApplicationRunner;
+//import org.springframework.stereotype.Component;
+//
+//import java.math.BigDecimal;
+//
+//@Component
+//public class DataInitializer implements ApplicationRunner {
+//    private final CategoryRepository repository;
+//
+////    public DataInitializer(CategoryRepository repository) {
+////        this.repository = repository;
+////    }
+////    @Override
+////    public void run(ApplicationArguments args) throws Exception {
+////        if (repository.count() == 0) { // Check if data already exists
+////            repository.save(new Category("Alimentação", "Gastos com Alimentos")); // Add your default data
+////            repository.save(new Category("Transporte", BigDecimal.valueOf(1000))); // Add your default data
+////            repository.save(new Category("Saúde", "Gastos com Saúde", BigDecimal.valueOf(1500))); // Add your default data
+////            repository.save(new Category("Salário")); // Add your default data
+////
+////            // add more as needed
+////        }
+////    }
+//}
+
+
+
+
+Arquivo: ./main/java/com/trabalho/controlefinancas/controller/UserController.java
+package com.trabalho.controlefinancas.controller;
+
+import com.trabalho.controlefinancas.model.Category;
+import com.trabalho.controlefinancas.model.User;
+import com.trabalho.controlefinancas.service.CategoryService;
+import com.trabalho.controlefinancas.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import java.math.BigDecimal;
+
+@Controller
+public class UserController {
+
+    @Autowired
+    private UserService userService;
+    @Autowired
+    private CategoryService categoryService;
+    @GetMapping("/loggedin")
+    public String loggedin() {
+        return "loggedin";
+    }
+
+    @GetMapping("/monitoring")
+    public String monitoring() {
+        return "monitoring";
+    }
+
+    @GetMapping("/")
+    public String home() {
+        return "home";
+    }
+
+    @GetMapping("/register")
+    public String showRegistrationForm() {
+        return "register";
+    }
+
+    @PostMapping("/register")
+    public String registerUser(@RequestParam String username, @RequestParam String password, Model model, RedirectAttributes redirectAttributes) {
+        try {
+            userService.registerUser(username, password);
+            //Divida Têcnica para inicialiar categoria padrão.
+            User user = userService.findUserByUsername(username);
+            Category baseCategory1 = new Category("Alimentação", "Gastos com Alimentos");
+            baseCategory1.setUser(user);
+            categoryService.addCategory(baseCategory1);
+            Category baseCategory2 = new Category("Transporte", BigDecimal.valueOf(1000));
+            baseCategory2.setUser(user);
+            categoryService.addCategory(baseCategory2);
+            Category baseCategory3 = new Category("Saúde", "Gastos com Saúde", BigDecimal.valueOf(1500));
+            baseCategory3.setUser(user);
+            categoryService.addCategory(baseCategory3);
+            Category baseCategory4 = new Category("Salário");
+            baseCategory4.setUser(user);
+            categoryService.addCategory(baseCategory4);
+            //termina a dívida tecnica
+            redirectAttributes.addFlashAttribute("successMessage", "Cadastro concluído! Faça login.");
+            return "redirect:/login";
+        } catch (RuntimeException e) {
+            model.addAttribute("error", "Nome de usuário já existe. Por favor escolha um outro nome de usuário.");
+            return "register";
+        }
+    }
+
+    @GetMapping("/login")
+    public String showLoginForm() {
+        return "login";
+    }
+
+    @PostMapping("/login")
+    public String loginUser(@RequestParam String username, @RequestParam String password, Model model) {
+        if (userService.loginUser(username, password)) {
+            model.addAttribute("username", username);
+            model.addAttribute("message", "Usuário logado com sucesso!");
+            return "loggedin";
+        } else {
+            model.addAttribute("errorMessage", "Usuário ou senha inválidos");
+            return "login";
+        }
+    }
+}
+
+
+Arquivo: ./main/java/com/trabalho/controlefinancas/controller/ChartController.java
+package com.trabalho.controlefinancas.controller;
+
+import com.trabalho.controlefinancas.service.ChartService;
+import org.jfree.chart.ChartUtils;
+import org.jfree.chart.JFreeChart;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import com.trabalho.controlefinancas.model.User;
+
+@Controller
+public class ChartController {
+
+    @Autowired
+    private ChartService chartService;
+
+    @GetMapping(value = "/simple-chart", produces = MediaType.IMAGE_PNG_VALUE)
+    @ResponseBody
+    public byte[] getExpenseChart(@AuthenticationPrincipal User user) throws IOException {
+        //System.out.println("Iniciando geração do gráfico para o usuário autenticado: " + user.getUsername());
+
+        JFreeChart chart = chartService.createExpensePieChart(user);
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ChartUtils.writeChartAsPNG(baos, chart, 600, 400);
+        //System.out.println("Gráfico gerado e convertido para PNG com sucesso");
+
+        return baos.toByteArray();
+    }
+
+    @GetMapping(value = "/cash-flow-chart", produces = MediaType.IMAGE_PNG_VALUE)
+    @ResponseBody
+    public byte[] getCashFlowChart(@AuthenticationPrincipal User user) throws IOException {
+        JFreeChart chart = chartService.createCashFlowChart(user);
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ChartUtils.writeChartAsPNG(baos, chart, 600, 400);
+
+        return baos.toByteArray();
+    }
+}
+
+
+Arquivo: ./main/java/com/trabalho/controlefinancas/controller/CategoryController.java
+package com.trabalho.controlefinancas.controller;
+
+import com.trabalho.controlefinancas.model.Category;
+import com.trabalho.controlefinancas.model.User;
+import com.trabalho.controlefinancas.repository.CategoryRepository;
+import com.trabalho.controlefinancas.service.CategoryService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import java.math.BigDecimal;
+import java.util.List;
+
+@Controller
+public class CategoryController {
+
+    @Autowired
+    private CategoryService categoryService;
+
+    @GetMapping("/add-category")
+    public String showAddCategoryForm() {
+        return "add-category";
+    }
+
+
+    @GetMapping("/categories")
+    public String showCategories(Model model, @AuthenticationPrincipal User user) {
+        if (user == null) {
+            // Caso o usuário não esteja logado, redireciona para a página de login
+            return "redirect:/login";
+        }
+        List<Category> categories = categoryService.getAllCategoriesByUser(user);
+        model.addAttribute("categories", categories);
+        return "categories";  // Nome da view que será renderizada
+    }
+
+    @PostMapping("/add-category")
+    public String addCategory(@RequestParam String name,
+                              @RequestParam(required = false) String description,
+                              @RequestParam(required = false) BigDecimal budget,
+                              @AuthenticationPrincipal User user,
+                              RedirectAttributes redirectAttributes) {
+        if (user == null) {
+            // Se o usuário não estiver autenticado, redireciona para a página de login
+            redirectAttributes.addFlashAttribute("error", "User is not authenticated.");
+            return "redirect:/login";  // Direciona para página de login
+        }
+        try {
+            Category category = new Category(name, description, budget);
+            category.setUser(user);
+            categoryService.addCategory(category);
+            redirectAttributes.addFlashAttribute("message", "Category successfully added!");
+            return "redirect:/categories";
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Error adding category. The name might already exist.");
+            return "redirect:/add-category";
+        }
+    }
+
+    @PostMapping("/delete-category/{id}")
+    public String deleteCategory(@PathVariable Long id, Authentication authentication) {
+        System.out.println("Usuário autenticado: " + authentication.getName());
+        categoryService.deleteCategoryById(id);
+        return "redirect:/categories";
+    }
+}
+
+Arquivo: ./main/java/com/trabalho/controlefinancas/controller/TransactionController.java
+package com.trabalho.controlefinancas.controller;
+
+import com.trabalho.controlefinancas.exception.BudgetExceededException;
+import com.trabalho.controlefinancas.model.Category;
+import com.trabalho.controlefinancas.model.Transaction;
+import com.trabalho.controlefinancas.model.TransactionType;
+import com.trabalho.controlefinancas.model.User;
+import com.trabalho.controlefinancas.service.TransactionService;
+import com.trabalho.controlefinancas.repository.CategoryRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.List;
+
+@Controller
+public class TransactionController {
+
+    @Autowired
+    private TransactionService transactionService;
+
+    @Autowired
+    private CategoryRepository categoryRepository;
+
+    @GetMapping("/transactions")
+    public String showTransactions(Model model, @AuthenticationPrincipal User user) {
+        List<Transaction> transactions = transactionService.getUserTransactions(user);
+
+        BigDecimal totalValue = transactions.stream()
+                .map(Transaction::getAmount) // Assuming `getAmount()` returns BigDecimal
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        model.addAttribute("totalValue", totalValue);
+        model.addAttribute("transactions", transactions);
+        return "transactions";
+    }
+
+    @GetMapping("/add-transaction")
+    public String showAddTransactionForm(Model model ,@AuthenticationPrincipal User user) {
+        List<Category> categories = categoryRepository.findByUser(user);
+        model.addAttribute("categories", categories);
+        return "add-transaction";
+    }
+
+    @PostMapping("/add-transaction")
+    public String addTransaction(
+            @RequestParam String type,
+            @RequestParam Category category,
+            @RequestParam BigDecimal amount,
+            @RequestParam String date,
+            @RequestParam String description,
+            @RequestParam(defaultValue = "false") boolean isRecurring,
+            @AuthenticationPrincipal User user,
+            RedirectAttributes redirectAttributes
+            ) {
+
+        Transaction transaction = new Transaction(
+                TransactionType.valueOf(type.toUpperCase()),
+                category,
+                amount,
+                LocalDate.parse(date),
+                description,
+                isRecurring,
+                user
+        );
+
+        try {
+            String errorMessage = transactionService.addTransaction(transaction);
+            if (errorMessage != null) {
+                redirectAttributes.addFlashAttribute("error", errorMessage);
+                return "redirect:/transactions";
+            } else {
+                redirectAttributes.addFlashAttribute("message", "Transação adicionada com sucesso!");
+                return "redirect:/transactions";
+            }
+        } catch (BudgetExceededException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            return "redirect:/transactions";
+        }
+    }
+
+    @PostMapping("/delete-transaction/{id}")
+    public String deleteTransaction(@PathVariable Long id, @AuthenticationPrincipal User user) {
+        transactionService.deleteTransactionByIdAndUser(id, user);
+        return "redirect:/transactions";
+    }
+}
+
+Arquivo: ./main/java/com/trabalho/controlefinancas/exception/BudgetExceededException.java
+package com.trabalho.controlefinancas.exception;
+
+public class BudgetExceededException extends RuntimeException {
+    public BudgetExceededException(String message) {
+        super(message);
+    }
+}
+
+Arquivo: ./main/java/com/trabalho/controlefinancas/repository/UserRepository.java
+package com.trabalho.controlefinancas.repository;
+
+import com.trabalho.controlefinancas.model.User;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import java.util.Optional;
+@Repository
+public interface UserRepository extends JpaRepository<User, Long> {
+    Optional<User> findByUsername(String username);
+}
+
+Arquivo: ./main/java/com/trabalho/controlefinancas/repository/CategoryRepository.java
+package com.trabalho.controlefinancas.repository;
+
+import com.trabalho.controlefinancas.model.Category;
+import com.trabalho.controlefinancas.model.User;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+import java.util.Optional;
+
+@Repository
+public interface CategoryRepository extends JpaRepository<Category, Long> {
+
+    List<Category> findByUser(User user);
+}
+
+
+Arquivo: ./main/java/com/trabalho/controlefinancas/repository/TransactionRepository.java
+package com.trabalho.controlefinancas.repository;
+
+import com.trabalho.controlefinancas.model.Category;
+import com.trabalho.controlefinancas.model.Transaction;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+import com.trabalho.controlefinancas.model.User;
+
+import java.util.List;
+
+
+@Repository
+public interface TransactionRepository extends JpaRepository<Transaction, Long> {
+
+    //Find Transactions by User
+    List<Transaction> findByUser(User user);
+
+    List<Transaction> findByCategoryAndUser(Category category, User user);
+}
+
+
+Arquivo: ./main/java/com/trabalho/controlefinancas/ControleFinancasApplication.java
+package com.trabalho.controlefinancas;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class ControleFinancasApplication {
+
+    public static void main(String[] args) {
+        SpringApplication.run(ControleFinancasApplication.class, args);
+    }
+}
+
+Arquivo: ./main/java/com/trabalho/controlefinancas/config/SecurityConfig.java
+package com.trabalho.controlefinancas.config;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+
+@Configuration
+@EnableWebSecurity
+public class SecurityConfig {
+
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http
+                .csrf(csrf -> csrf
+                        .ignoringRequestMatchers(new AntPathRequestMatcher("/h2-console/**"))
+                )
+                .headers(headers -> headers
+                        .frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin)
+                )
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/").permitAll()
+                        .requestMatchers("/h2-console/**").permitAll()
+                        .requestMatchers("/register", "/login", "/css/**", "/js/**").permitAll()
+                        .anyRequest().authenticated()
+                )
+                .formLogin(form -> form
+                        .loginPage("/login")
+                        .defaultSuccessUrl("/transactions", true)
+                        .permitAll()
+                )
+                .logout(logout -> logout
+                        .logoutUrl("/logout")
+                        .logoutSuccessUrl("/")
+                        .invalidateHttpSession(true)
+                        .permitAll()
+                );
+
+        return http.build();
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+}
+
+Arquivo: ./main/java/com/trabalho/controlefinancas/model/UserRole.java
+package com.trabalho.controlefinancas.model;
+
+public enum UserRole {
+    ROLE_USER,
+    ROLE_ADMIN
+}
+
+Arquivo: ./main/java/com/trabalho/controlefinancas/model/User.java
+package com.trabalho.controlefinancas.model;
+
+import jakarta.persistence.*;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
+import java.util.Collection;
+import java.util.Collections;
+
+@Entity
+@Table(name = "app_user")
+public class User implements UserDetails {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(unique = true, nullable = false)
+    private String username;
+
+    @Column(nullable = false)
+    private String password;
+
+    @Enumerated(EnumType.STRING)
+    private UserRole role = UserRole.ROLE_USER;
+
+    private boolean enabled = true;
+
+    public User() {
+    }
+
+    public User(String username, String password) {
+        this.username = username;
+        this.password = password;
+    }
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        SimpleGrantedAuthority authority = new SimpleGrantedAuthority(role.name());
+        return Collections.singletonList(authority);
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    // Standard getters and setters
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public UserRole getRole() {
+        return role;
+    }
+
+    public void setRole(UserRole role) {
+        this.role = role;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
+}
+
+Arquivo: ./main/java/com/trabalho/controlefinancas/model/Category.java
+package com.trabalho.controlefinancas.model;
+
+import jakarta.persistence.*;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+
+@Entity
+@Table(name = "category")
+public class Category {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false)
+    private String name;
+
+    @Column
+    private String description;
+
+    @Column
+    private BigDecimal budget;
+
+    @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Transaction> transactions = new ArrayList<>();
+
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false) // Relacionamento com a tabela User
+    private User user;
+
+    // Default constructor
+    public Category() {}
+
+    // Constructor with name
+    public Category(String name) {
+        this.name = name;
+    }
+
+    // Constructor with name and budget
+    public Category(String name, BigDecimal budget) {
+        this.name = name;
+        this.budget = budget;
+    }
+
+    // Constructor with name and description
+    public Category(String name, String description) {
+        this.name = name;
+        this.description = description;
+    }
+
+    // Constructor with name, description and budget
+    public Category(String name, String description, BigDecimal budget) {
+        this.name = name;
+        this.description = description;
+        this.budget = budget;
+    }
+
+    // Constructor with name, description, budget and user
+    public Category(String name, String description, BigDecimal budget, User user) {
+        this.name = name;
+        this.description = description;
+        this.budget = budget;
+        this.user = user;
+    }
+
+    // Getters and setters
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public BigDecimal getBudget() {
+        return budget;
+    }
+
+    public void setBudget(BigDecimal budget) {
+        this.budget = budget;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public List<Transaction> getTransactions() {
+        return transactions;
+    }
+
+    public void setTransactions(List<Transaction> transactions) {
+        this.transactions = transactions;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    // Helper method to add a transaction
+    public void addTransaction(Transaction transaction) {
+        transactions.add(transaction);
+        transaction.setCategory(this);
+    }
+
+    // Helper method to remove a transaction
+    public void removeTransaction(Transaction transaction) {
+        transactions.remove(transaction);
+        transaction.setCategory(null);
+    }
+}
+
+
+Arquivo: ./main/java/com/trabalho/controlefinancas/model/TransactionType.java
+package com.trabalho.controlefinancas.model;
+
+public enum TransactionType {
+    RECEITA,
+    DESPESA
+}
+
+
+Arquivo: ./main/java/com/trabalho/controlefinancas/model/Transaction.java
+package com.trabalho.controlefinancas.model;
+
+import jakarta.persistence.*;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+
+@Entity
+@Table(name = "transaction")
+public class Transaction {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Enumerated(EnumType.STRING)
+    private TransactionType type; // RECEITA ou DESPESA
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "category_id", nullable = false)
+    private Category category;
+    @Column(nullable = false, precision = 10, scale = 2)
+    private BigDecimal amount;
+    @Column(nullable = false)
+    private LocalDate date;
+    @Column(nullable = false)
+    private String description;
+    @Column(nullable = false)
+    private boolean isRecurring;
+
+    @ManyToOne
+    private User user;
+
+    public Transaction() {
+    }
+
+    public Transaction(TransactionType type, Category category, BigDecimal amount, LocalDate date, String description, boolean isRecurring, User user) {
+        this.type = type;
+        this.category = category;
+        this.amount = amount;
+        this.date = date;
+        this.description = description;
+        this.isRecurring = isRecurring;
+        this.user = user;
+    }
+
+    // Getters e Setters
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public TransactionType getType() {
+        return type;
+    }
+
+    public void setType(TransactionType type) {
+        this.type = type;
+    }
+
+    public Category getCategory() {
+        return category;
+    }
+
+    public void setCategory(Category category) {
+        this.category = category;
+    }
+
+    public BigDecimal getAmount() {
+        return amount;
+    }
+
+    public void setAmount(BigDecimal amount) {
+        this.amount = amount;
+    }
+
+    public LocalDate getDate() {
+        return date;
+    }
+
+    public void setDate(LocalDate date) {
+        this.date = date;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public boolean isRecurring() {
+        return isRecurring;
+    }
+
+    public void setRecurring(boolean isRecurring) {
+        this.isRecurring = isRecurring;
+    }
+}
+
+
+Arquivo: ./main/java/com/trabalho/controlefinancas/service/CategoryService.java
+package com.trabalho.controlefinancas.service;
+
+import com.trabalho.controlefinancas.model.TransactionType;
+import com.trabalho.controlefinancas.model.User;
+import com.trabalho.controlefinancas.repository.CategoryRepository;
+import com.trabalho.controlefinancas.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import com.trabalho.controlefinancas.model.Category;
+import org.springframework.stereotype.Service;
+import com.trabalho.controlefinancas.model.Transaction;
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Optional;
+
+@Service
+public class CategoryService {
+
+    @Autowired
+    private CategoryRepository categoryRepository;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    public void addCategory(Category category) {
+        if (category.getUser() != null) {// Associa o usuário à categoria
+            categoryRepository.save(category);  // Salva a categoria com o usuário associado
+        } else {
+            throw new IllegalArgumentException("User cannot be null");
+        }
+    }
+//
+//    public List<Category> getAllCategories() {
+//        return categoryRepository.findAll();
+//    }
+
+    public void deleteCategoryById(Long id){
+        Optional<Category> category = categoryRepository.findById(id);
+        category.ifPresent(categoryRepository::delete);
+    }
+
+    public List<Category> getAllCategoriesByUser(User user) {
+        return categoryRepository.findByUser(user);
+    }
+
+
+    /**
+     * Verifica se o orçamento da categoria foi excedido.
+     *
+     * @param user O usuário ao qual a categoria pertence
+     * @param categoryId O ID da categoria
+     * @return true se o orçamento foi excedido, false caso contrário
+     */
+    public boolean isBudgetExceededForCategory(User user, Long categoryId) {
+        Optional<Category> categoryOpt = categoryRepository.findById(categoryId);
+        if (categoryOpt.isPresent()) {
+            Category category = categoryOpt.get();
+            if (category.getUser().equals(user)) {
+                BigDecimal totalExpenses = category.getTransactions().stream()
+                        .filter(transaction -> transaction.getType() == TransactionType.DESPESA)
+                        .map(Transaction::getAmount)
+                        .reduce(BigDecimal.ZERO, BigDecimal::add);
+                return totalExpenses.compareTo(category.getBudget()) > 0;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Retorna o valor restante do orçamento de uma categoria.
+     *
+     * @param user O usuário ao qual a categoria pertence
+     * @param categoryId O ID da categoria
+     * @return O valor restante do orçamento, ou BigDecimal.ZERO se a categoria não for encontrada ou o usuário não coincidir
+     */
+    public BigDecimal getRemainingBudgetForCategory(User user, Long categoryId) {
+        Optional<Category> categoryOpt = categoryRepository.findById(categoryId);
+        if (categoryOpt.isPresent()) {
+            Category category = categoryOpt.get();
+            if (category.getUser().equals(user)) {
+                BigDecimal totalExpenses = category.getTransactions().stream()
+                        .filter(transaction -> transaction.getType() == TransactionType.DESPESA)
+                        .map(Transaction::getAmount)
+                        .reduce(BigDecimal.ZERO, BigDecimal::add);
+                return category.getBudget().subtract(totalExpenses);
+            }
+        }
+        return BigDecimal.ZERO;
+    }
+}
+
+
+
+Arquivo: ./main/java/com/trabalho/controlefinancas/service/ChartService.java
+package com.trabalho.controlefinancas.service;
+
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.plot.PiePlot;
+import org.jfree.data.general.DefaultPieDataset;
+import com.trabalho.controlefinancas.model.Transaction;
+import com.trabalho.controlefinancas.model.TransactionType;
+import com.trabalho.controlefinancas.model.User;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Date;
+import java.time.ZoneId;
+
+import org.jfree.chart.axis.DateAxis;
+import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
+import org.jfree.data.time.Day;
+import org.jfree.data.time.TimeSeries;
+import org.jfree.data.time.TimeSeriesCollection;
+
+import java.util.Comparator;
+
+@Service
+public class ChartService {
+
+    @Autowired
+    private TransactionService transactionService;
+
+    public JFreeChart createExpensePieChart(User user) {
+        List<Transaction> transactions = transactionService.getUserTransactions(user);
+
+        // Utiliza um Map temporário para acumular os valores das categorias
+        Map<String, Double> tempCategoryAmounts = new HashMap<>();
+
+        transactions.stream()
+                .filter(transaction -> transaction.getType() == TransactionType.DESPESA)
+                .forEach(transaction -> {
+                    String categoryName = transaction.getCategory().getName();
+                    BigDecimal amount = transaction.getAmount();
+
+                    // Se já existe um valor para a categoria, soma o valor da transação
+                    double currentAmount = tempCategoryAmounts.getOrDefault(categoryName, 0.0);
+                    tempCategoryAmounts.put(categoryName, currentAmount + amount.doubleValue());
+                });
+
+        // Cria o dataset final usando os valores acumulados no Map
+        DefaultPieDataset dataset = new DefaultPieDataset();
+        tempCategoryAmounts.forEach((category, totalAmount) -> {
+            dataset.setValue(category, totalAmount);
+        });
+
+        // Cria o gráfico de pizza com os dados do dataset
+        JFreeChart chart = ChartFactory.createPieChart(
+                "Distribuição de Despesas", // Título
+                dataset,                   // Dataset
+                true,                       // Legenda visível
+                true,                       // Tooltips ativados
+                false                       // URLs desativadas
+        );
+
+        // Ajusta o gráfico (exemplo: remove contornos das fatias)
+        PiePlot plot = (PiePlot) chart.getPlot();
+        plot.setSectionOutlinesVisible(false);
+
+        return chart; // Retorna o gráfico gerado
+    }
+
+    public JFreeChart createCashFlowChart(User user) {
+        List<Transaction> transactions = transactionService.getUserTransactions(user);
+
+        // Ordenar transações por data
+        transactions.sort(Comparator.comparing(Transaction::getDate));
+
+        // Cria a série de dados para o gráfico
+        TimeSeries series = new TimeSeries("Saldo Acumulado");
+        BigDecimal saldoAcumulado = BigDecimal.ZERO;
+
+        for (Transaction transaction : transactions) {
+            BigDecimal valor = transaction.getType() == TransactionType.RECEITA
+                    ? transaction.getAmount()
+                    : transaction.getAmount().negate();
+            saldoAcumulado = saldoAcumulado.add(valor);
+
+            // Adiciona o saldo acumulado à série
+            Date date = Date.from(transaction.getDate().atStartOfDay(ZoneId.systemDefault()).toInstant());
+            series.addOrUpdate(new Day(date), saldoAcumulado.doubleValue());
+        }
+
+        // Adiciona a série ao conjunto de dados
+        TimeSeriesCollection dataset = new TimeSeriesCollection(series);
+
+        // Configura o gráfico
+        XYPlot plot = new XYPlot(
+                dataset,
+                new DateAxis("Data"),
+                new NumberAxis("Saldo Acumulado"),
+                new XYLineAndShapeRenderer(true, false)
+        );
+
+        return new JFreeChart("Fluxo de Caixa", JFreeChart.DEFAULT_TITLE_FONT, plot, true);
+    }
+}
+
+
+Arquivo: ./main/java/com/trabalho/controlefinancas/service/TransactionService.java
+package com.trabalho.controlefinancas.service;
+
+import com.trabalho.controlefinancas.exception.BudgetExceededException;
+import com.trabalho.controlefinancas.model.Category;
+import com.trabalho.controlefinancas.model.Transaction;
+import com.trabalho.controlefinancas.model.TransactionType;
+import com.trabalho.controlefinancas.model.User;
+import com.trabalho.controlefinancas.repository.TransactionRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.List;
+
+@Service
+public class TransactionService {
+
+    @Autowired
+    private TransactionRepository transactionRepository;
+
+    public List<Transaction> getUserTransactions(User user) {
+        return transactionRepository.findByUser(user);
+    }
+
+//    public Transaction addTransaction(Transaction transaction) {
+//        return transactionRepository.save(transaction);
+//    }
+
+    public String addTransaction(Transaction transaction) {
+        Category category = transaction.getCategory();
+        User user = transaction.getUser();
+
+        // Obtém o mês e o ano da transação
+        LocalDate transactionDate = transaction.getDate();
+        int month = transactionDate.getMonthValue();
+        int year = transactionDate.getYear();
+
+
+        // Salva a transação mesmo se exceder o limite do mês
+        transactionRepository.save(transaction);
+
+        if (transaction.getType() == TransactionType.RECEITA || category.getBudget() == null) return null;
+        // se for Receita ou budget não existir
+        // o limite do mês não precisa ser calculado
+
+
+        BigDecimal totalTransactionsAmount = transactionRepository
+                .findByCategoryAndUser(category, user)
+                .stream()
+                .filter(t -> t.getDate().getMonthValue() == month
+                        && t.getDate().getYear() == year
+                        && t.getType() == TransactionType.DESPESA
+                ) // Verifica o mesmo mês, ano e se é uma Despesa
+                .map(Transaction::getAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        BigDecimal newTotal = totalTransactionsAmount.add(transaction.getAmount());
+
+
+
+        if (newTotal.compareTo(category.getBudget()) > 0) {
+
+            return "O valor das transações para a categoria " + category.getName() + " excedeu o orçamento mensal.";
+        }
+
+        return null;
+    }
+
+
+    public void deleteTransactionByIdAndUser(Long id, User user) {
+        Transaction transaction = transactionRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Transaction not found"));
+
+        if (!transaction.getUser()
+                .getId()
+                .equals(user.getId())) {
+            throw new AccessDeniedException("Not authorized to delete this transaction");
+        }
+
+        transactionRepository.delete(transaction);
+    }
+}
+
+Arquivo: ./main/java/com/trabalho/controlefinancas/service/UserService.java
+package com.trabalho.controlefinancas.service;
+
+import com.trabalho.controlefinancas.model.User;
+import com.trabalho.controlefinancas.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
+
+import java.util.Optional;
+
+@Service
+public class UserService implements UserDetailsService{
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    public void registerUser(String username, String password) {
+        User user = new User(username,password);
+        if (userRepository.findByUsername(user.getUsername()).isPresent()) {
+            throw new RuntimeException("Username already exists");
+        }
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        userRepository.save(user);
+    }
+
+
+    public User findUserByUsername(String username) {
+        if (userRepository.findByUsername(username).isEmpty()) {
+            throw new RuntimeException("Username doesn't exists");
+        }
+        return userRepository.findByUsername(username).get();
+    }
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("Usuário de nome \""+username+ "\" não foi achado"));
+    }
+
+    public boolean loginUser(String username, String password) {
+        Optional<User> user = userRepository.findByUsername(username);
+        return user.isPresent() && user.get().getPassword().equals(password);
+    }
+}
+

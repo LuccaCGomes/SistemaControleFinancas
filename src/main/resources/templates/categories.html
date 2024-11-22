@@ -34,6 +34,9 @@
           <a class="nav-link active" th:href="@{/categories}">Ver Categorias</a>
         </li>
         <li class="nav-item">
+          <a class="nav-link" th:href="@{/monitoring}">Acompanhamento</a>
+        </li>
+        <li class="nav-item">
           <form action="/logout" method="POST" style="display: inline;">
             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
             <button type="submit" class="btn btn-link nav-link" style="color: red; font-weight: bold;">Sair</button>
@@ -45,24 +48,17 @@
 </nav>
 
 <!-- Main Content -->
-<div class="container mt-5">
-  <!-- Success/Error Messages -->
-  <div class="alert alert-success alert-dismissible fade show" role="alert" th:if="${message}">
-    <span th:text="${message}"></span>
-    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-  </div>
 
-  <div class="row mb-4">
-    <div class="col">
-      <h2>Categorias</h2>
-    </div>
-    <div class="col text-end">
-      <a th:href="@{/add-category}" class="btn btn-primary">
-        <i class="fas fa-plus"></i> Adicionar nova Categoria
-      </a>
-    </div>
+<div class="row mb-4">
+  <div class="col">
+    <h2>Categorias</h2>
   </div>
-
+  <div class="col text-end">
+    <a th:href="@{/add-category}" class="btn btn-primary">
+      <i class="fas fa-plus"></i> Adicionar nova Categoria
+    </a>
+  </div>
+</div>
   <!-- Categories List -->
   <div class="card">
     <div class="card-body">
@@ -74,7 +70,6 @@
         <table class="table table-hover">
           <thead class="table-light">
           <tr>
-            <th>ID</th>
             <th>Nome</th>
             <th>Orçamento</th>
             <th>Descrição</th>
@@ -84,7 +79,6 @@
           </thead>
           <tbody>
           <tr th:each="category : ${categories}">
-            <td th:text="${category.id}"></td>
             <td th:text="${category.name}"></td>
             <td th:text="${category.budget != null ? #numbers.formatDecimal(category.budget, 1, 'POINT', 2, 'COMMA') : 'N/A'}"></td>
             <td th:text="${category.description != null ? category.description : 'N/A'}"></td>

@@ -3,6 +3,7 @@ package com.trabalho.controlefinancas.service;
 import com.trabalho.controlefinancas.exception.BudgetExceededException;
 import com.trabalho.controlefinancas.model.Category;
 import com.trabalho.controlefinancas.model.Transaction;
+import com.trabalho.controlefinancas.model.TransactionType;
 import com.trabalho.controlefinancas.model.User;
 import com.trabalho.controlefinancas.repository.TransactionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,7 +11,10 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class TransactionService {
@@ -26,34 +30,91 @@ public class TransactionService {
 //        return transactionRepository.save(transaction);
 //    }
 
-    public Transaction addTransaction(Transaction transaction) {
+    public String addTransaction(Transaction transaction) {
         Category category = transaction.getCategory();
         User user = transaction.getUser();
 
-        // Verifica se a soma das transações da categoria do usuário está abaixo do orçamento
+        // Obtém o mês e o ano da transação
+        LocalDate transactionDate = transaction.getDate();
+        int month = transactionDate.getMonthValue();
+        int year = transactionDate.getYear();
+
+
+        // Salva a transação mesmo se exceder o limite do mês
+        transactionRepository.save(transaction);
+
+        if (transaction.getType() == TransactionType.RECEITA || category.getBudget() == null) return null;
+        // se for Receita ou budget não existir
+        // o limite do mês não precisa ser calculado
+
+
         BigDecimal totalTransactionsAmount = transactionRepository
                 .findByCategoryAndUser(category, user)
                 .stream()
+                .filter(t -> t.getDate().getMonthValue() == month
+                        && t.getDate().getYear() == year
+                        && t.getType() == TransactionType.DESPESA
+                ) // Verifica o mesmo mês, ano e se é uma Despesa
                 .map(Transaction::getAmount)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         BigDecimal newTotal = totalTransactionsAmount.add(transaction.getAmount());
 
+
+
         if (newTotal.compareTo(category.getBudget()) > 0) {
-            throw new BudgetExceededException("Adding this transaction exceeds the budget limit for the category.");
+
+            return "O valor das transações para a categoria " + category.getName() + " excedeu o orçamento mensal.";
         }
 
-        return transactionRepository.save(transaction);
+        return null;
     }
+
 
     public void deleteTransactionByIdAndUser(Long id, User user) {
         Transaction transaction = transactionRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Transaction not found"));
 
-        if (!transaction.getUser().getId().equals(user.getId())) {
+        if (!transaction.getUser()
+                .getId()
+                .equals(user.getId())) {
             throw new AccessDeniedException("Not authorized to delete this transaction");
         }
 
         transactionRepository.delete(transaction);
+    }
+
+    public Map<String, BigDecimal> getMonthlyFinancialSummary(User user, int month, int year) {
+        List<Transaction> transactions = transactionRepository.findByUser(user);
+
+        // Calcular o saldo inicial (todas as receitas - despesas até o último dia do mês anterior)
+        BigDecimal initialBalance = transactions.stream()
+                .filter(t -> t.getDate().isBefore(LocalDate.of(year, month, 1)))
+                .map(t -> t.getType() == TransactionType.RECEITA ? t.getAmount() : t.getAmount().negate())
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        BigDecimal totalIncome = transactions.stream()
+                .filter(t -> t.getType() == TransactionType.RECEITA &&
+                        t.getDate().getMonthValue() == month &&
+                        t.getDate().getYear() == year)
+                .map(Transaction::getAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        BigDecimal totalExpense = transactions.stream()
+                .filter(t -> t.getType() == TransactionType.DESPESA &&
+                        t.getDate().getMonthValue() == month &&
+                        t.getDate().getYear() == year)
+                .map(Transaction::getAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        BigDecimal finalBalance = initialBalance.add(totalIncome).subtract(totalExpense);
+
+        Map<String, BigDecimal> summary = new HashMap<>();
+        summary.put("initialBalance", initialBalance);
+        summary.put("totalIncome", totalIncome);
+        summary.put("totalExpense", totalExpense);
+        summary.put("finalBalance", finalBalance);
+
+        return summary;
     }
 }
