@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-<span class="nc" id="L16">public class CategoryService {</span>
+<span class="fc" id="L16">public class CategoryService {</span>
 
     @Autowired
     private CategoryRepository categoryRepository;
@@ -22,24 +22,24 @@ import java.util.Optional;
     private UserRepository userRepository;
 
     public void addCategory(Category category) {
-<span class="nc bnc" id="L25" title="All 2 branches missed.">        if (category.getUser() != null) {// Associa o usuário à categoria</span>
-<span class="nc" id="L26">            categoryRepository.save(category);  // Salva a categoria com o usuário associado</span>
+<span class="fc bfc" id="L25" title="All 2 branches covered.">        if (category.getUser() != null) {// Associa o usuário à categoria</span>
+<span class="fc" id="L26">            categoryRepository.save(category);  // Salva a categoria com o usuário associado</span>
         } else {
-<span class="nc" id="L28">            throw new IllegalArgumentException(&quot;User cannot be null&quot;);</span>
+<span class="fc" id="L28">            throw new IllegalArgumentException(&quot;User cannot be null&quot;);</span>
         }
-<span class="nc" id="L30">    }</span>
+<span class="fc" id="L30">    }</span>
 //
 //    public List&lt;Category&gt; getAllCategories() {
 //        return categoryRepository.findAll();
 //    }
 
     public void deleteCategoryById(Long id){
-<span class="nc" id="L37">        Optional&lt;Category&gt; category = categoryRepository.findById(id);</span>
-<span class="nc" id="L38">        category.ifPresent(categoryRepository::delete);</span>
-<span class="nc" id="L39">    }</span>
+<span class="fc" id="L37">        Optional&lt;Category&gt; category = categoryRepository.findById(id);</span>
+<span class="fc" id="L38">        category.ifPresent(categoryRepository::delete);</span>
+<span class="fc" id="L39">    }</span>
 
     public List&lt;Category&gt; getAllCategoriesByUser(User user) {
-<span class="nc" id="L42">        return categoryRepository.findByUser(user);</span>
+<span class="fc" id="L42">        return categoryRepository.findByUser(user);</span>
     }
 
 
@@ -51,15 +51,15 @@ import java.util.Optional;
      * @return true se o orçamento foi excedido, false caso contrário
      */
     public boolean isBudgetExceededForCategory(User user, Long categoryId) {
-<span class="nc" id="L54">        Optional&lt;Category&gt; categoryOpt = categoryRepository.findById(categoryId);</span>
-<span class="nc bnc" id="L55" title="All 2 branches missed.">        if (categoryOpt.isPresent()) {</span>
-<span class="nc" id="L56">            Category category = categoryOpt.get();</span>
-<span class="nc bnc" id="L57" title="All 2 branches missed.">            if (category.getUser().equals(user)) {</span>
-<span class="nc" id="L58">                BigDecimal totalExpenses = category.getTransactions().stream()</span>
-<span class="nc bnc" id="L59" title="All 2 branches missed.">                        .filter(transaction -&gt; transaction.getType() == TransactionType.DESPESA)</span>
-<span class="nc" id="L60">                        .map(Transaction::getAmount)</span>
-<span class="nc" id="L61">                        .reduce(BigDecimal.ZERO, BigDecimal::add);</span>
-<span class="nc bnc" id="L62" title="All 2 branches missed.">                return totalExpenses.compareTo(category.getBudget()) &gt; 0;</span>
+<span class="fc" id="L54">        Optional&lt;Category&gt; categoryOpt = categoryRepository.findById(categoryId);</span>
+<span class="pc bpc" id="L55" title="1 of 2 branches missed.">        if (categoryOpt.isPresent()) {</span>
+<span class="fc" id="L56">            Category category = categoryOpt.get();</span>
+<span class="pc bpc" id="L57" title="1 of 2 branches missed.">            if (category.getUser().equals(user)) {</span>
+<span class="fc" id="L58">                BigDecimal totalExpenses = category.getTransactions().stream()</span>
+<span class="pc bpc" id="L59" title="1 of 2 branches missed.">                        .filter(transaction -&gt; transaction.getType() == TransactionType.DESPESA)</span>
+<span class="fc" id="L60">                        .map(Transaction::getAmount)</span>
+<span class="fc" id="L61">                        .reduce(BigDecimal.ZERO, BigDecimal::add);</span>
+<span class="fc bfc" id="L62" title="All 2 branches covered.">                return totalExpenses.compareTo(category.getBudget()) &gt; 0;</span>
             }
         }
 <span class="nc" id="L65">        return false;</span>
@@ -73,18 +73,18 @@ import java.util.Optional;
      * @return O valor restante do orçamento, ou BigDecimal.ZERO se a categoria não for encontrada ou o usuário não coincidir
      */
     public BigDecimal getRemainingBudgetForCategory(User user, Long categoryId) {
-<span class="nc" id="L76">        Optional&lt;Category&gt; categoryOpt = categoryRepository.findById(categoryId);</span>
-<span class="nc bnc" id="L77" title="All 2 branches missed.">        if (categoryOpt.isPresent()) {</span>
-<span class="nc" id="L78">            Category category = categoryOpt.get();</span>
-<span class="nc bnc" id="L79" title="All 2 branches missed.">            if (category.getUser().equals(user)) {</span>
-<span class="nc" id="L80">                BigDecimal totalExpenses = category.getTransactions().stream()</span>
-<span class="nc bnc" id="L81" title="All 2 branches missed.">                        .filter(transaction -&gt; transaction.getType() == TransactionType.DESPESA)</span>
-<span class="nc" id="L82">                        .map(Transaction::getAmount)</span>
-<span class="nc" id="L83">                        .reduce(BigDecimal.ZERO, BigDecimal::add);</span>
-<span class="nc" id="L84">                return category.getBudget().subtract(totalExpenses);</span>
+<span class="fc" id="L76">        Optional&lt;Category&gt; categoryOpt = categoryRepository.findById(categoryId);</span>
+<span class="fc bfc" id="L77" title="All 2 branches covered.">        if (categoryOpt.isPresent()) {</span>
+<span class="fc" id="L78">            Category category = categoryOpt.get();</span>
+<span class="pc bpc" id="L79" title="1 of 2 branches missed.">            if (category.getUser().equals(user)) {</span>
+<span class="fc" id="L80">                BigDecimal totalExpenses = category.getTransactions().stream()</span>
+<span class="pc bpc" id="L81" title="1 of 2 branches missed.">                        .filter(transaction -&gt; transaction.getType() == TransactionType.DESPESA)</span>
+<span class="fc" id="L82">                        .map(Transaction::getAmount)</span>
+<span class="fc" id="L83">                        .reduce(BigDecimal.ZERO, BigDecimal::add);</span>
+<span class="fc" id="L84">                return category.getBudget().subtract(totalExpenses);</span>
             }
         }
-<span class="nc" id="L87">        return BigDecimal.ZERO;</span>
+<span class="fc" id="L87">        return BigDecimal.ZERO;</span>
     }
 }
 

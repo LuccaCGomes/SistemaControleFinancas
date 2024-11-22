@@ -1,15 +1,15 @@
 GROUP,PACKAGE,CLASS,INSTRUCTION_MISSED,INSTRUCTION_COVERED,BRANCH_MISSED,BRANCH_COVERED,LINE_MISSED,LINE_COVERED,COMPLEXITY_MISSED,COMPLEXITY_COVERED,METHOD_MISSED,METHOD_COVERED
-Archetype - com.trabalho.controlefinancas,com.trabalho.controlefinancas.service,CategoryService,129,0,16,0,29,0,16,0,8,0
-Archetype - com.trabalho.controlefinancas,com.trabalho.controlefinancas.service,ChartService,170,0,6,0,34,0,9,0,6,0
-Archetype - com.trabalho.controlefinancas,com.trabalho.controlefinancas.service,TransactionService,249,0,28,0,53,0,25,0,11,0
-Archetype - com.trabalho.controlefinancas,com.trabalho.controlefinancas.service,UserService,86,0,8,0,14,0,10,0,6,0
+Archetype - com.trabalho.controlefinancas,com.trabalho.controlefinancas.service,CategoryService,4,125,5,11,1,28,5,11,0,8
+Archetype - com.trabalho.controlefinancas,com.trabalho.controlefinancas.service,ChartService,1,169,1,5,0,34,1,8,0,6
+Archetype - com.trabalho.controlefinancas,com.trabalho.controlefinancas.service,TransactionService,11,238,9,19,0,53,10,15,1,10
+Archetype - com.trabalho.controlefinancas,com.trabalho.controlefinancas.service,UserService,0,86,0,8,0,14,0,10,0,6
 Archetype - com.trabalho.controlefinancas,com.trabalho.controlefinancas,ControleFinancasApplication,5,3,0,0,2,1,1,1,1,1
 Archetype - com.trabalho.controlefinancas,com.trabalho.controlefinancas.exception,BudgetExceededException,4,0,0,0,2,0,1,0,1,0
-Archetype - com.trabalho.controlefinancas,com.trabalho.controlefinancas.model,UserRole,15,0,0,0,3,0,1,0,1,0
-Archetype - com.trabalho.controlefinancas,com.trabalho.controlefinancas.model,User,75,0,0,0,28,0,16,0,16,0
-Archetype - com.trabalho.controlefinancas,com.trabalho.controlefinancas.model,Transaction,83,0,0,0,35,0,18,0,18,0
-Archetype - com.trabalho.controlefinancas,com.trabalho.controlefinancas.model,Category,144,0,0,0,48,0,20,0,20,0
-Archetype - com.trabalho.controlefinancas,com.trabalho.controlefinancas.model,TransactionType,15,0,0,0,3,0,1,0,1,0
+Archetype - com.trabalho.controlefinancas,com.trabalho.controlefinancas.model,UserRole,0,15,0,0,0,3,0,1,0,1
+Archetype - com.trabalho.controlefinancas,com.trabalho.controlefinancas.model,User,16,59,0,0,5,23,4,12,4,12
+Archetype - com.trabalho.controlefinancas,com.trabalho.controlefinancas.model,Transaction,0,83,0,0,0,35,0,18,0,18
+Archetype - com.trabalho.controlefinancas,com.trabalho.controlefinancas.model,Category,0,144,0,0,0,48,0,20,0,20
+Archetype - com.trabalho.controlefinancas,com.trabalho.controlefinancas.model,TransactionType,0,15,0,0,0,3,0,1,0,1
 Archetype - com.trabalho.controlefinancas,com.trabalho.controlefinancas.config,SecurityConfig,106,0,0,0,22,0,8,0,8,0
 Archetype - com.trabalho.controlefinancas,com.trabalho.controlefinancas.controller,ChartController,37,0,0,0,9,0,3,0,3,0
 Archetype - com.trabalho.controlefinancas,com.trabalho.controlefinancas.controller,UserController,115,0,2,0,30,0,8,0,7,0

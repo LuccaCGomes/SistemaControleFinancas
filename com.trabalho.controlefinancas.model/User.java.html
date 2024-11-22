@@ -22,18 +22,18 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private String password;
 
-<span class="nc" id="L25">    @Enumerated(EnumType.STRING)</span>
+<span class="fc" id="L25">    @Enumerated(EnumType.STRING)</span>
     private UserRole role = UserRole.ROLE_USER;
 
-<span class="nc" id="L28">    private boolean enabled = true;</span>
+<span class="fc" id="L28">    private boolean enabled = true;</span>
 
-<span class="nc" id="L30">    public User() {</span>
-<span class="nc" id="L31">    }</span>
+<span class="fc" id="L30">    public User() {</span>
+<span class="fc" id="L31">    }</span>
 
-<span class="nc" id="L33">    public User(String username, String password) {</span>
-<span class="nc" id="L34">        this.username = username;</span>
-<span class="nc" id="L35">        this.password = password;</span>
-<span class="nc" id="L36">    }</span>
+<span class="fc" id="L33">    public User(String username, String password) {</span>
+<span class="fc" id="L34">        this.username = username;</span>
+<span class="fc" id="L35">        this.password = password;</span>
+<span class="fc" id="L36">    }</span>
 
     @Override
     public Collection&lt;? extends GrantedAuthority&gt; getAuthorities() {
@@ -58,44 +58,44 @@ public class User implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-<span class="nc" id="L61">        return enabled;</span>
+<span class="fc" id="L61">        return enabled;</span>
     }
 
     // Standard getters and setters
     public Long getId() {
-<span class="nc" id="L66">        return id;</span>
+<span class="fc" id="L66">        return id;</span>
     }
 
     public void setId(Long id) {
-<span class="nc" id="L70">        this.id = id;</span>
-<span class="nc" id="L71">    }</span>
+<span class="fc" id="L70">        this.id = id;</span>
+<span class="fc" id="L71">    }</span>
 
     public String getUsername() {
-<span class="nc" id="L74">        return username;</span>
+<span class="fc" id="L74">        return username;</span>
     }
 
     public void setUsername(String username) {
-<span class="nc" id="L78">        this.username = username;</span>
-<span class="nc" id="L79">    }</span>
+<span class="fc" id="L78">        this.username = username;</span>
+<span class="fc" id="L79">    }</span>
 
     public String getPassword() {
-<span class="nc" id="L82">        return password;</span>
+<span class="fc" id="L82">        return password;</span>
     }
 
     public void setPassword(String password) {
-<span class="nc" id="L86">        this.password = password;</span>
-<span class="nc" id="L87">    }</span>
+<span class="fc" id="L86">        this.password = password;</span>
+<span class="fc" id="L87">    }</span>
 
     public UserRole getRole() {
-<span class="nc" id="L90">        return role;</span>
+<span class="fc" id="L90">        return role;</span>
     }
 
     public void setRole(UserRole role) {
-<span class="nc" id="L94">        this.role = role;</span>
-<span class="nc" id="L95">    }</span>
+<span class="fc" id="L94">        this.role = role;</span>
+<span class="fc" id="L95">    }</span>
 
     public void setEnabled(boolean enabled) {
-<span class="nc" id="L98">        this.enabled = enabled;</span>
-<span class="nc" id="L99">    }</span>
+<span class="fc" id="L98">        this.enabled = enabled;</span>
+<span class="fc" id="L99">    }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

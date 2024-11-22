@@ -13,7 +13,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import java.util.Optional;
 
 @Service
-<span class="nc" id="L16">public class UserService implements UserDetailsService{</span>
+<span class="fc" id="L16">public class UserService implements UserDetailsService{</span>
 
     @Autowired
     private UserRepository userRepository;
@@ -22,30 +22,30 @@ import java.util.Optional;
     private PasswordEncoder passwordEncoder;
 
     public void registerUser(String username, String password) {
-<span class="nc" id="L25">        User user = new User(username,password);</span>
-<span class="nc bnc" id="L26" title="All 2 branches missed.">        if (userRepository.findByUsername(user.getUsername()).isPresent()) {</span>
-<span class="nc" id="L27">            throw new RuntimeException(&quot;Username already exists&quot;);</span>
+<span class="fc" id="L25">        User user = new User(username,password);</span>
+<span class="fc bfc" id="L26" title="All 2 branches covered.">        if (userRepository.findByUsername(user.getUsername()).isPresent()) {</span>
+<span class="fc" id="L27">            throw new RuntimeException(&quot;Username already exists&quot;);</span>
         }
-<span class="nc" id="L29">        user.setPassword(passwordEncoder.encode(user.getPassword()));</span>
-<span class="nc" id="L30">        userRepository.save(user);</span>
-<span class="nc" id="L31">    }</span>
+<span class="fc" id="L29">        user.setPassword(passwordEncoder.encode(user.getPassword()));</span>
+<span class="fc" id="L30">        userRepository.save(user);</span>
+<span class="fc" id="L31">    }</span>
 
 
     public User findUserByUsername(String username) {
-<span class="nc bnc" id="L35" title="All 2 branches missed.">        if (userRepository.findByUsername(username).isEmpty()) {</span>
-<span class="nc" id="L36">            throw new RuntimeException(&quot;Username doesn't exists&quot;);</span>
+<span class="fc bfc" id="L35" title="All 2 branches covered.">        if (userRepository.findByUsername(username).isEmpty()) {</span>
+<span class="fc" id="L36">            throw new RuntimeException(&quot;Username doesn't exists&quot;);</span>
         }
-<span class="nc" id="L38">        return userRepository.findByUsername(username).get();</span>
+<span class="fc" id="L38">        return userRepository.findByUsername(username).get();</span>
     }
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-<span class="nc" id="L42">        return userRepository.findByUsername(username)</span>
-<span class="nc" id="L43">                .orElseThrow(() -&gt; new UsernameNotFoundException(&quot;Usuário de nome \&quot;&quot;+username+ &quot;\&quot; não foi achado&quot;));</span>
+<span class="fc" id="L42">        return userRepository.findByUsername(username)</span>
+<span class="fc" id="L43">                .orElseThrow(() -&gt; new UsernameNotFoundException(&quot;Usuário de nome \&quot;&quot;+username+ &quot;\&quot; não foi achado&quot;));</span>
     }
 
     public boolean loginUser(String username, String password) {
-<span class="nc" id="L47">        Optional&lt;User&gt; user = userRepository.findByUsername(username);</span>
-<span class="nc bnc" id="L48" title="All 4 branches missed.">        return user.isPresent() &amp;&amp; user.get().getPassword().equals(password);</span>
+<span class="fc" id="L47">        Optional&lt;User&gt; user = userRepository.findByUsername(username);</span>
+<span class="fc bfc" id="L48" title="All 4 branches covered.">        return user.isPresent() &amp;&amp; user.get().getPassword().equals(password);</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

@@ -28,36 +28,36 @@ import org.jfree.data.time.TimeSeriesCollection;
 import java.util.Comparator;
 
 @Service
-<span class="nc" id="L31">public class ChartService {</span>
+<span class="fc" id="L31">public class ChartService {</span>
 
     @Autowired
     private TransactionService transactionService;
 
     public JFreeChart createExpensePieChart(User user) {
-<span class="nc" id="L37">        List&lt;Transaction&gt; transactions = transactionService.getUserTransactions(user);</span>
+<span class="fc" id="L37">        List&lt;Transaction&gt; transactions = transactionService.getUserTransactions(user);</span>
 
         // Utiliza um Map temporário para acumular os valores das categorias
-<span class="nc" id="L40">        Map&lt;String, Double&gt; tempCategoryAmounts = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L40">        Map&lt;String, Double&gt; tempCategoryAmounts = new HashMap&lt;&gt;();</span>
 
-<span class="nc" id="L42">        transactions.stream()</span>
-<span class="nc bnc" id="L43" title="All 2 branches missed.">                .filter(transaction -&gt; transaction.getType() == TransactionType.DESPESA)</span>
-<span class="nc" id="L44">                .forEach(transaction -&gt; {</span>
-<span class="nc" id="L45">                    String categoryName = transaction.getCategory().getName();</span>
-<span class="nc" id="L46">                    BigDecimal amount = transaction.getAmount();</span>
+<span class="fc" id="L42">        transactions.stream()</span>
+<span class="pc bpc" id="L43" title="1 of 2 branches missed.">                .filter(transaction -&gt; transaction.getType() == TransactionType.DESPESA)</span>
+<span class="fc" id="L44">                .forEach(transaction -&gt; {</span>
+<span class="fc" id="L45">                    String categoryName = transaction.getCategory().getName();</span>
+<span class="fc" id="L46">                    BigDecimal amount = transaction.getAmount();</span>
 
                     // Se já existe um valor para a categoria, soma o valor da transação
-<span class="nc" id="L49">                    double currentAmount = tempCategoryAmounts.getOrDefault(categoryName, 0.0);</span>
-<span class="nc" id="L50">                    tempCategoryAmounts.put(categoryName, currentAmount + amount.doubleValue());</span>
-<span class="nc" id="L51">                });</span>
+<span class="fc" id="L49">                    double currentAmount = tempCategoryAmounts.getOrDefault(categoryName, 0.0);</span>
+<span class="fc" id="L50">                    tempCategoryAmounts.put(categoryName, currentAmount + amount.doubleValue());</span>
+<span class="fc" id="L51">                });</span>
 
         // Cria o dataset final usando os valores acumulados no Map
-<span class="nc" id="L54">        DefaultPieDataset dataset = new DefaultPieDataset();</span>
-<span class="nc" id="L55">        tempCategoryAmounts.forEach((category, totalAmount) -&gt; {</span>
-<span class="nc" id="L56">            dataset.setValue(category, totalAmount);</span>
-<span class="nc" id="L57">        });</span>
+<span class="fc" id="L54">        DefaultPieDataset dataset = new DefaultPieDataset();</span>
+<span class="fc" id="L55">        tempCategoryAmounts.forEach((category, totalAmount) -&gt; {</span>
+<span class="fc" id="L56">            dataset.setValue(category, totalAmount);</span>
+<span class="fc" id="L57">        });</span>
 
         // Cria o gráfico de pizza com os dados do dataset
-<span class="nc" id="L60">        JFreeChart chart = ChartFactory.createPieChart(</span>
+<span class="fc" id="L60">        JFreeChart chart = ChartFactory.createPieChart(</span>
                 &quot;Distribuição de Despesas&quot;, // Título
                 dataset,                   // Dataset
                 true,                       // Legenda visível
@@ -66,45 +66,45 @@ import java.util.Comparator;
         );
 
         // Ajusta o gráfico (exemplo: remove contornos das fatias)
-<span class="nc" id="L69">        PiePlot plot = (PiePlot) chart.getPlot();</span>
-<span class="nc" id="L70">        plot.setSectionOutlinesVisible(false);</span>
+<span class="fc" id="L69">        PiePlot plot = (PiePlot) chart.getPlot();</span>
+<span class="fc" id="L70">        plot.setSectionOutlinesVisible(false);</span>
 
-<span class="nc" id="L72">        return chart; // Retorna o gráfico gerado</span>
+<span class="fc" id="L72">        return chart; // Retorna o gráfico gerado</span>
     }
 
     public JFreeChart createCashFlowChart(User user) {
-<span class="nc" id="L76">        List&lt;Transaction&gt; transactions = transactionService.getUserTransactions(user);</span>
+<span class="fc" id="L76">        List&lt;Transaction&gt; transactions = transactionService.getUserTransactions(user);</span>
 
         // Ordenar transações por data
-<span class="nc" id="L79">        transactions.sort(Comparator.comparing(Transaction::getDate));</span>
+<span class="fc" id="L79">        transactions.sort(Comparator.comparing(Transaction::getDate));</span>
 
         // Cria a série de dados para o gráfico
-<span class="nc" id="L82">        TimeSeries series = new TimeSeries(&quot;Saldo Acumulado&quot;);</span>
-<span class="nc" id="L83">        BigDecimal saldoAcumulado = BigDecimal.ZERO;</span>
+<span class="fc" id="L82">        TimeSeries series = new TimeSeries(&quot;Saldo Acumulado&quot;);</span>
+<span class="fc" id="L83">        BigDecimal saldoAcumulado = BigDecimal.ZERO;</span>
 
-<span class="nc bnc" id="L85" title="All 2 branches missed.">        for (Transaction transaction : transactions) {</span>
-<span class="nc bnc" id="L86" title="All 2 branches missed.">            BigDecimal valor = transaction.getType() == TransactionType.RECEITA</span>
-<span class="nc" id="L87">                    ? transaction.getAmount()</span>
-<span class="nc" id="L88">                    : transaction.getAmount().negate();</span>
-<span class="nc" id="L89">            saldoAcumulado = saldoAcumulado.add(valor);</span>
+<span class="fc bfc" id="L85" title="All 2 branches covered.">        for (Transaction transaction : transactions) {</span>
+<span class="fc bfc" id="L86" title="All 2 branches covered.">            BigDecimal valor = transaction.getType() == TransactionType.RECEITA</span>
+<span class="fc" id="L87">                    ? transaction.getAmount()</span>
+<span class="fc" id="L88">                    : transaction.getAmount().negate();</span>
+<span class="fc" id="L89">            saldoAcumulado = saldoAcumulado.add(valor);</span>
 
             // Adiciona o saldo acumulado à série
-<span class="nc" id="L92">            Date date = Date.from(transaction.getDate().atStartOfDay(ZoneId.systemDefault()).toInstant());</span>
-<span class="nc" id="L93">            series.addOrUpdate(new Day(date), saldoAcumulado.doubleValue());</span>
-<span class="nc" id="L94">        }</span>
+<span class="fc" id="L92">            Date date = Date.from(transaction.getDate().atStartOfDay(ZoneId.systemDefault()).toInstant());</span>
+<span class="fc" id="L93">            series.addOrUpdate(new Day(date), saldoAcumulado.doubleValue());</span>
+<span class="fc" id="L94">        }</span>
 
         // Adiciona a série ao conjunto de dados
-<span class="nc" id="L97">        TimeSeriesCollection dataset = new TimeSeriesCollection(series);</span>
+<span class="fc" id="L97">        TimeSeriesCollection dataset = new TimeSeriesCollection(series);</span>
 
         // Configura o gráfico
-<span class="nc" id="L100">        XYPlot plot = new XYPlot(</span>
+<span class="fc" id="L100">        XYPlot plot = new XYPlot(</span>
                 dataset,
                 new DateAxis(&quot;Data&quot;),
                 new NumberAxis(&quot;Saldo Acumulado&quot;),
                 new XYLineAndShapeRenderer(true, false)
         );
 
-<span class="nc" id="L107">        return new JFreeChart(&quot;Fluxo de Caixa&quot;, JFreeChart.DEFAULT_TITLE_FONT, plot, true);</span>
+<span class="fc" id="L107">        return new JFreeChart(&quot;Fluxo de Caixa&quot;, JFreeChart.DEFAULT_TITLE_FONT, plot, true);</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>
