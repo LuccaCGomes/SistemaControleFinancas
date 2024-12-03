@@ -68,4 +68,21 @@ public class CategoryController {
         categoryService.deleteCategoryById(id);
         return "redirect:/categories";
     }
+
+    @PostMapping("/edit-category")
+    public String editCategory(
+            @RequestParam Long id,
+            @RequestParam String name,
+            @RequestParam(required = false) BigDecimal budget,
+            @RequestParam(required = false) String description,
+            RedirectAttributes redirectAttributes) {
+        Category category = categoryService.findById(id);
+        category.setName(name);
+        category.setBudget(budget);
+        category.setDescription(description);
+        categoryService.updateCategory(category);
+
+        redirectAttributes.addFlashAttribute("message", "Categoria editada com sucesso!");
+        return "redirect:/categories";
+    }
 }

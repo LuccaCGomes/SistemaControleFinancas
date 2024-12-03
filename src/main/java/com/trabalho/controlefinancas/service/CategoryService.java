@@ -86,5 +86,30 @@ public class CategoryService {
         }
         return BigDecimal.ZERO;
     }
+
+    /**
+     * Busca uma categoria pelo ID.
+     *
+     * @param id O ID da categoria.
+     * @return A categoria correspondente.
+     * @throws IllegalArgumentException Se a categoria não for encontrada.
+     */
+    public Category findById(Long id) {
+        return categoryRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Categoria não encontrada com o ID: " + id));
+    }
+
+    /**
+     * Atualiza os dados de uma categoria existente.
+     *
+     * @param category A categoria com os novos dados.
+     * @return A categoria atualizada.
+     */
+    public void updateCategory(Category category) {
+        if (!categoryRepository.existsById(category.getId())) {
+            throw new IllegalArgumentException("Categoria não encontrada com o ID: " + category.getId());
+        }
+        categoryRepository.save(category);
+    }
 }
 
