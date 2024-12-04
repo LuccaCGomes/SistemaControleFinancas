@@ -103,7 +103,6 @@ public class CategoryService {
      * Atualiza os dados de uma categoria existente.
      *
      * @param category A categoria com os novos dados.
-     * @return A categoria atualizada.
      */
     public void updateCategory(Category category) {
         if (!categoryRepository.existsById(category.getId())) {
