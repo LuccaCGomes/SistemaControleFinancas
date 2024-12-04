@@ -117,4 +117,30 @@ public class TransactionService {
 
         return summary;
     }
+
+    /**
+     * Busca uma transação pelo ID.
+     *
+     * @param id O ID da transação.
+     * @return A transação correspondente.
+     * @throws IllegalArgumentException Se a transação não for encontrada.
+     */
+    public Transaction findById(Long id) {
+        return transactionRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Transação não encontrada com o ID: " + id));
+    }
+
+    /**
+     * Atualiza os dados de uma transação existente.
+     *
+     * @param transaction A transação com os novos dados.
+     * @return A transação atualizada.
+     * @throws IllegalArgumentException Se a transação não for encontrada.
+     */
+    public void updateTransaction(Transaction transaction) {
+        if (!transactionRepository.existsById(transaction.getId())) {
+            throw new IllegalArgumentException("Transação não encontrada com o ID: " + transaction.getId());
+        }
+        transactionRepository.save(transaction);
+    }
 }

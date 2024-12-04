@@ -34,7 +34,8 @@ public class TransactionController {
         BigDecimal totalValue = transactions.stream()
                 .map(Transaction::getAmount) // Assuming `getAmount()` returns BigDecimal
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
-
+        List<Category> categories = categoryRepository.findByUser(user);
+        model.addAttribute("categories", categories);
         model.addAttribute("totalValue", totalValue);
         model.addAttribute("transactions", transactions);
         return "transactions";
@@ -87,6 +88,29 @@ public class TransactionController {
     @PostMapping("/delete-transaction/{id}")
     public String deleteTransaction(@PathVariable Long id, @AuthenticationPrincipal User user) {
         transactionService.deleteTransactionByIdAndUser(id, user);
+        return "redirect:/transactions";
+    }
+
+    @PostMapping("/edit-transaction")
+    public String editTransaction(
+            @RequestParam String type,
+            @RequestParam Long id,
+            @RequestParam Long category,
+            @RequestParam String date,
+            @RequestParam String description,
+            @RequestParam BigDecimal amount,
+            RedirectAttributes redirectAttributes) {
+
+        Transaction transaction = transactionService.findById(id);
+        transaction.setType(TransactionType.valueOf(type.toUpperCase()));
+        transaction.setDate(LocalDate.parse(date));
+        transaction.setDescription(description);
+        transaction.setCategory(categoryRepository.findById(category).get());
+        transaction.setAmount(amount);
+
+        transactionService.updateTransaction(transaction);
+
+        redirectAttributes.addFlashAttribute("message", "Transação editada com sucesso!");
         return "redirect:/transactions";
     }
 }
