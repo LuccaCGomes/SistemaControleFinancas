@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        h1 {
+            color: #333;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f4f4f4;
+        }
+    </style>
+</head>
+<body>
+<h1 th:text="'Relatório de Transações'"></h1>
+<table>
+  <thead>
+  <tr>
+    <th>ID</th>
+    <th>Descrição</th>
+    <th>Valor</th>
+    <th>Data</th>
+  </tr>
+  </thead>
+  <tbody>
+  <tr th:each="transaction : ${transactions}">
+    <td th:text="${#temporals.format(transaction.date, 'dd/MM/yyyy')}"></td>
+    <td th:text="${transaction.type}"></td>
+    <td th:text="${transaction.description}"></td>
+    <td th:text="${transaction.category.name}"></td>
+    <td class="text-end"
+        th:text="${#numbers.formatDecimal(transaction.amount, 1, 'POINT', 2, 'COMMA')}"></td>
+    <td th:text="${transaction.isRecurring ? 'Sim' : 'Não'}"></td>
+  </tr>
+  </tbody>
+</table>
+</body>
+</html>
