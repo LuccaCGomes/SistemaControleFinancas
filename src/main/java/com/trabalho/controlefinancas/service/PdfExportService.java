@@ -19,4 +19,10 @@ public class PdfExportService {
             throw new RuntimeException("Error generating PDF", e);
         }
     }
+
+    public String prepareHtmlWithChart(String htmlTemplate, String chartPieBase64, String chartCashFlowBase64) {
+        // Substituir o marcador ${graficoBase64} pelo gráfico gerado
+        return htmlTemplate.replace("${graficoPieBase64}", chartPieBase64)
+                .replace("${graficoCashFlowBase64}", chartCashFlowBase64);
+    }
 }
