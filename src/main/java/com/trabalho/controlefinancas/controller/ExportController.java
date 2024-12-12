@@ -14,10 +14,7 @@ import org.springframework.http.ResponseEntity;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Controller
 public class ExportController {
@@ -73,13 +70,25 @@ public class ExportController {
     }
 
     @GetMapping("/export-csv")
-    public ResponseEntity<byte[]> exportDataToCsv() {
-        List<String[]> data = Arrays.asList(
-                new String[]{"ID", "Nome", "Valor"},
-                new String[]{"1", "Transação 1", "100.00"},
-                new String[]{"2", "Transação 2", "200.00"}
-        );
+    public ResponseEntity<byte[]> exportDataToCsv(Model model, @AuthenticationPrincipal User user) {
 
+        List<Transaction> transactions = transactionService.getUserTransactions(user);
+
+        List<String[]> data = new ArrayList<>();
+        data.add(new String[]{"ID","Tipo", "Descrição", "Valor", "Data", "Categoria", "É Recorrente?"});
+
+        // Converter cada transação em uma linha CSV
+        for (Transaction transaction : transactions) {
+            data.add(new String[]{
+                    transaction.getId().toString(),
+                    transaction.getType().toString(),
+                    transaction.getDescription(),
+                    String.valueOf(transaction.getAmount()),
+                    transaction.getDate().toString(),
+                    transaction.getCategory().getName(),
+                    transaction.isRecurringString()
+            });
+        }
         byte[] csvBytes = csvExportService.generateCsv(data);
 
         return ResponseEntity.ok()
