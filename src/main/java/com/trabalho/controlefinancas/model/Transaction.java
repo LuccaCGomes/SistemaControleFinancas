@@ -104,6 +104,13 @@ public class Transaction {
         return isRecurring;
     }
 
+    public String isRecurringString(){
+        if (isRecurring()){
+            return  "Sim";
+        }
+        return "Não";
+    }
+
     public void setRecurring(boolean isRecurring) {
         this.isRecurring = isRecurring;
     }

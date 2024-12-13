@@ -26,10 +26,6 @@ public class TransactionService {
         return transactionRepository.findByUser(user);
     }
 
-//    public Transaction addTransaction(Transaction transaction) {
-//        return transactionRepository.save(transaction);
-//    }
-
     public String addTransaction(Transaction transaction) {
         Category category = transaction.getCategory();
         User user = transaction.getUser();
@@ -142,5 +138,9 @@ public class TransactionService {
             throw new IllegalArgumentException("Transação não encontrada com o ID: " + transaction.getId());
         }
         transactionRepository.save(transaction);
+    }
+
+    public List<Transaction> findByMonth(int year, int month, User user){
+        return transactionRepository.findTransactionsByMonthAndUser(year, month, user);
     }
 }
