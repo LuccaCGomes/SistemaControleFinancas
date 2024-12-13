@@ -130,7 +130,6 @@ public class TransactionService {
      * Atualiza os dados de uma transação existente.
      *
      * @param transaction A transação com os novos dados.
-     * @return A transação atualizada.
      * @throws IllegalArgumentException Se a transação não for encontrada.
      */
     public void updateTransaction(Transaction transaction) {
