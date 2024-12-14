@@ -29,7 +29,7 @@ public class ExportController {
     @Autowired
     private TransactionService transactionService;
     @Autowired
-    private CsvExportService csvExportService;
+    private CsvService csvService;
 
 
     @GetMapping("/export-pdf")
@@ -89,7 +89,7 @@ public class ExportController {
                     transaction.isRecurringString()
             });
         }
-        byte[] csvBytes = csvExportService.generateCsv(data);
+        byte[] csvBytes = csvService.generateCsv(data);
 
         return ResponseEntity.ok()
                 .header("Content-Disposition", "attachment; filename=transacoes.csv")
