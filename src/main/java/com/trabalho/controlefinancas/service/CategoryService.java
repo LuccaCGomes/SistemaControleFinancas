@@ -110,5 +110,10 @@ public class CategoryService {
         }
         categoryRepository.save(category);
     }
+
+    public Category findByNameAndUser(String name, User user) {
+        return categoryRepository.findByNameAndUser(name, user)
+                .orElseThrow(() -> new IllegalArgumentException("Categoria não encontrada com o Nome e User: " + name + " e " + user.getUsername()));
+    }
 }
 
