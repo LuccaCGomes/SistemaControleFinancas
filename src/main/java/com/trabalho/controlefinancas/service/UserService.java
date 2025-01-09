@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import com.trabalho.controlefinancas.model.User;
 import com.trabalho.controlefinancas.repository.UserRepository;
+import com.trabalho.controlefinancas.model.UserRole;
 
 @Service
 public class UserService implements UserDetailsService{
