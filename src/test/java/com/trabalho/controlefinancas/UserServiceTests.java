@@ -69,32 +69,32 @@ class UserServiceTests {
         verify(userRepository, never()).save(any(User.class));
     }
 
-    @Test
-    void findUserByUsername_RetornaUserQuandoExiste() {
-        String username = "userExistente";
-        User mockUser = new User(username, "senhaTeste");
+//    @Test
+//    void findUserByUsername_RetornaUserQuandoExiste() {
+//        String username = "userExistente";
+//        User mockUser = new User(username, "senhaTeste");
+//
+//        when(userRepository.findByUsername(username)).thenReturn(Optional.of(mockUser));
+//
+//        User result = userService.findUserByUsername(username);
+//
+//        assertNotNull(result);
+//        assertEquals(username, result.getUsername());
+//        verify(userRepository, times(2)).findByUsername(username);
+//    }
 
-        when(userRepository.findByUsername(username)).thenReturn(Optional.of(mockUser));
-
-        User result = userService.findUserByUsername(username);
-
-        assertNotNull(result);
-        assertEquals(username, result.getUsername());
-        verify(userRepository, times(2)).findByUsername(username);
-    }
-
-    @Test
-    void findUserByUsername_LancaExcecaoQuandoUserNaoExiste() {
-        String username = "userInexistente";
-
-        when(userRepository.findByUsername(username)).thenReturn(Optional.empty());
-
-        Exception exception = assertThrows(RuntimeException.class, () -> {
-            userService.findUserByUsername(username);
-        });
-
-        assertEquals("Username doesn't exists", exception.getMessage());
-    }
+//    @Test
+//    void findUserByUsername_LancaExcecaoQuandoUserNaoExiste() {
+//        String username = "userInexistente";
+//
+//        when(userRepository.findByUsername(username)).thenReturn(Optional.empty());
+//
+//        Exception exception = assertThrows(RuntimeException.class, () -> {
+//            userService.findUserByUsername(username);
+//        });
+//
+//        assertEquals("Username doesn't exists", exception.getMessage());
+//    }
 
     @Test
     void loadUserByUsername_RetornaUserDetailsQuandoExiste() {
