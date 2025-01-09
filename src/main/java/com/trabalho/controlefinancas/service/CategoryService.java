@@ -1,25 +1,30 @@
 package com.trabalho.controlefinancas.service;
 
-import com.trabalho.controlefinancas.model.TransactionType;
-import com.trabalho.controlefinancas.model.User;
-import com.trabalho.controlefinancas.repository.CategoryRepository;
-import com.trabalho.controlefinancas.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import com.trabalho.controlefinancas.model.Category;
-import org.springframework.stereotype.Service;
-import com.trabalho.controlefinancas.model.Transaction;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.trabalho.controlefinancas.model.Category;
+import com.trabalho.controlefinancas.model.Transaction;
+import com.trabalho.controlefinancas.model.TransactionType;
+import com.trabalho.controlefinancas.model.User;
+import com.trabalho.controlefinancas.repository.CategoryRepository;
+import com.trabalho.controlefinancas.repository.UserRepository;
+
 @Service
 public class CategoryService {
 
-    @Autowired
-    private CategoryRepository categoryRepository;
+    private final CategoryRepository categoryRepository;
+    private final UserRepository userRepository;
 
-    @Autowired
-    private UserRepository userRepository;
+    // Injeção de dependência via construtor
+    public CategoryService(CategoryRepository categoryRepository, UserRepository userRepository) {
+        this.categoryRepository = categoryRepository;
+        this.userRepository = userRepository;
+    }
 
     public void addCategory(Category category) {
         if (category.getUser() != null) {// Associa o usuário à categoria

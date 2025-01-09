@@ -1,31 +1,37 @@
 package com.trabalho.controlefinancas.controller;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.List;
+
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
 import com.trabalho.controlefinancas.exception.BudgetExceededException;
 import com.trabalho.controlefinancas.model.Category;
 import com.trabalho.controlefinancas.model.Transaction;
 import com.trabalho.controlefinancas.model.TransactionType;
 import com.trabalho.controlefinancas.model.User;
-import com.trabalho.controlefinancas.service.TransactionService;
 import com.trabalho.controlefinancas.repository.CategoryRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.List;
+import com.trabalho.controlefinancas.service.TransactionService;
 
 @Controller
 public class TransactionController {
 
-    @Autowired
-    private TransactionService transactionService;
+    private final TransactionService transactionService;
+    private final CategoryRepository categoryRepository;
 
-    @Autowired
-    private CategoryRepository categoryRepository;
+    // Constructor injection
+    public TransactionController(TransactionService transactionService, CategoryRepository categoryRepository) {
+        this.transactionService = transactionService;
+        this.categoryRepository = categoryRepository;
+    }
 
     @GetMapping("/transactions")
     public String showTransactions(Model model, @AuthenticationPrincipal User user) {
@@ -105,7 +111,7 @@ public class TransactionController {
         transaction.setType(TransactionType.valueOf(type.toUpperCase()));
         transaction.setDate(LocalDate.parse(date));
         transaction.setDescription(description);
-        transaction.setCategory(categoryRepository.findById(category).get());
+        transaction.setCategory(categoryRepository.findById(category).orElseThrow(() -> new IllegalArgumentException("Categoria não encontrada")));
         transaction.setAmount(amount);
 
         transactionService.updateTransaction(transaction);

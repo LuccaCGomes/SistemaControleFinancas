@@ -3,11 +3,9 @@ import com.trabalho.controlefinancas.model.Category;
 import com.trabalho.controlefinancas.model.Transaction;
 import com.trabalho.controlefinancas.model.TransactionType;
 import com.trabalho.controlefinancas.model.User;
-import com.trabalho.controlefinancas.repository.TransactionRepository;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.CSVRecord;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -25,11 +23,15 @@ import static java.lang.Long.parseLong;
 
 @Service
 public class CsvService {
-    @Autowired
-    CategoryService categoryService = new CategoryService();
+    private final CategoryService categoryService;
+    private final TransactionService transactionService;
 
-    @Autowired
-    TransactionService transactionService = new TransactionService();
+    // Injeção de dependência via construtor
+    public CsvService(CategoryService categoryService, TransactionService transactionService) {
+        this.categoryService = categoryService;
+        this.transactionService = transactionService;
+    }
+
 
     public byte[] generateCsv(List<String[]> data) {
         try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream();

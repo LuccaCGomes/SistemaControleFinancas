@@ -1,3 +1,123 @@
+Arquivo: ./test/java/com/trabalho/controlefinancas/CategoryModelTests.java
+package com.trabalho.controlefinancas;
+
+import com.trabalho.controlefinancas.model.Category;
+import com.trabalho.controlefinancas.model.Transaction;
+import com.trabalho.controlefinancas.model.User;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.math.BigDecimal;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+class CategoryModelTests {
+
+    private Category category;
+
+    @BeforeEach
+    void setUp() {
+        category = new Category("Food", "Expenses related to food", BigDecimal.valueOf(500.00));
+    }
+
+    @Test
+    void construtorDefault() {
+        Category defaultCategory = new Category();
+        assertNull(defaultCategory.getName());
+        assertNull(defaultCategory.getDescription());
+        assertNull(defaultCategory.getBudget());
+        assertNotNull(defaultCategory.getTransactions());
+        assertTrue(defaultCategory.getTransactions().isEmpty());
+    }
+
+    @Test
+    void construtorComNome() {
+        Category nameOnlyCategory = new Category("Viagem");
+        assertEquals("Viagem", nameOnlyCategory.getName());
+        assertNull(nameOnlyCategory.getDescription());
+        assertNull(nameOnlyCategory.getBudget());
+    }
+
+    @Test
+    void construtorComNomeEOrcamento() {
+        Category budgetCategory = new Category("Viagem", BigDecimal.valueOf(300.00));
+        assertEquals("Viagem", budgetCategory.getName());
+        assertNull(budgetCategory.getDescription());
+        assertEquals(BigDecimal.valueOf(300.00), budgetCategory.getBudget());
+    }
+
+    @Test
+    void construtorComNomeEDescricao() {
+        Category descriptionCategory = new Category("Viagem", "Gastos com viagens");
+        assertEquals("Viagem", descriptionCategory.getName());
+        assertEquals("Gastos com viagens", descriptionCategory.getDescription());
+        assertNull(descriptionCategory.getBudget());
+    }
+
+    @Test
+    void construtorCompleto() {
+        User user = new User();
+        Category fullCategory = new Category("Viagem", "Gastos com viagens", BigDecimal.valueOf(300.00), user);
+
+        assertEquals("Viagem", fullCategory.getName());
+        assertEquals("Gastos com viagens", fullCategory.getDescription());
+        assertEquals(BigDecimal.valueOf(300.00), fullCategory.getBudget());
+        assertEquals(user, fullCategory.getUser());
+    }
+
+    @Test
+    void testAddTransaction() {
+        Transaction transaction = new Transaction();
+        category.addTransaction(transaction);
+
+        List<Transaction> transactions = category.getTransactions();
+        assertEquals(1, transactions.size());
+        assertTrue(transactions.contains(transaction));
+        assertEquals(category, transaction.getCategory());
+    }
+
+    @Test
+    void testRemoveTransaction() {
+        Transaction transaction = new Transaction();
+        category.addTransaction(transaction);
+        category.removeTransaction(transaction);
+
+        List<Transaction> transactions = category.getTransactions();
+        assertTrue(transactions.isEmpty());
+        assertNull(transaction.getCategory());
+    }
+
+    @Test
+    void testSettersAndGetters() {
+        category.setId(1L);
+        category.setName("Entertainment");
+        category.setDescription("Movies, games, etc.");
+        category.setBudget(BigDecimal.valueOf(100.00));
+
+        assertEquals(1L, category.getId());
+        assertEquals("Entertainment", category.getName());
+        assertEquals("Movies, games, etc.", category.getDescription());
+        assertEquals(BigDecimal.valueOf(100.00), category.getBudget());
+    }
+
+    @Test
+    void testTransactionListInitialization() {
+        assertNotNull(category.getTransactions());
+        assertTrue(category.getTransactions().isEmpty());
+    }
+
+    @Test
+    void testUserAssociation() {
+        User user = new User();
+        category.setUser(user);
+
+        assertEquals(user, category.getUser());
+    }
+}
+
+
 Arquivo: ./test/java/com/trabalho/controlefinancas/CategoryControllerTests.java
 package com.trabalho.controlefinancas;
 
@@ -29,62 +149,757 @@ public class CategoryControllerTests {
 }
 
 
-Arquivo: ./test/java/com/trabalho/controlefinancas/DataInitializerTests.java
+Arquivo: ./test/java/com/trabalho/controlefinancas/ChartServiceTests.java
+package com.trabalho.controlefinancas;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+import com.trabalho.controlefinancas.model.*;
+import com.trabalho.controlefinancas.service.ChartService;
+import com.trabalho.controlefinancas.service.TransactionService;
+import org.jfree.chart.JFreeChart;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.Arrays;
+
+
+class ChartServiceTests {
+
+    @Mock
+    private TransactionService transactionService;
+
+    @InjectMocks
+    private ChartService chartService;
+
+    private User user;
+    private Category category1;
+    private Category category2;
+
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
+        user = new User();
+        user.setId(1L);
+
+        category1 = new Category();
+        category1.setName("Alimentação");
+
+        category2 = new Category();
+        category2.setName("Transporte");
+    }
+
+    @Test
+    void criaGraficoTortaDespesas() {
+        // Mock de transações
+        Transaction transaction1 = new Transaction();
+        transaction1.setType(TransactionType.DESPESA);
+        transaction1.setCategory(category1);
+        transaction1.setAmount(new BigDecimal("100"));
+
+        Transaction transaction2 = new Transaction();
+        transaction2.setType(TransactionType.DESPESA);
+        transaction2.setCategory(category1);
+        transaction2.setAmount(new BigDecimal("50"));
+
+        Transaction transaction3 = new Transaction();
+        transaction3.setType(TransactionType.DESPESA);
+        transaction3.setCategory(category2);
+        transaction3.setAmount(new BigDecimal("30"));
+
+        when(transactionService.getUserTransactions(user)).thenReturn(Arrays.asList(transaction1, transaction2, transaction3));
+
+        JFreeChart chart = chartService.createExpensePieChart(user);
+
+        assertNotNull(chart);
+        assertEquals("Distribuição de Despesas", chart.getTitle().getText());
+        verify(transactionService, times(1)).getUserTransactions(user);
+    }
+
+    @Test
+    void criaGraficoFluxo() {
+        Transaction transaction1 = new Transaction();
+        transaction1.setType(TransactionType.RECEITA);
+        transaction1.setAmount(new BigDecimal("500"));
+        transaction1.setDate(LocalDate.of(2024, 11, 1));
+
+        Transaction transaction2 = new Transaction();
+        transaction2.setType(TransactionType.DESPESA);
+        transaction2.setAmount(new BigDecimal("200"));
+        transaction2.setDate(LocalDate.of(2024, 11, 5));
+
+        Transaction transaction3 = new Transaction();
+        transaction3.setType(TransactionType.RECEITA);
+        transaction3.setAmount(new BigDecimal("300"));
+        transaction3.setDate(LocalDate.of(2024, 11, 10));
+
+        when(transactionService.getUserTransactions(user)).thenReturn(Arrays.asList(transaction1, transaction2, transaction3));
+
+        JFreeChart chart = chartService.createCashFlowChart(user);
+
+        assertNotNull(chart);
+        assertEquals("Fluxo de Caixa", chart.getTitle().getText());
+        verify(transactionService, times(1)).getUserTransactions(user);
+    }
+}
+
+
+Arquivo: ./test/java/com/trabalho/controlefinancas/UserModelTests.java
+package com.trabalho.controlefinancas;
+
+import com.trabalho.controlefinancas.model.User;
+import com.trabalho.controlefinancas.model.UserRole;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+class UserModelTests {
+
+    private User user;
+
+
+    @BeforeEach
+    void setUp() {
+        user = new User();
+    }
+
+    @Test
+    void testSetAndGetRole() {
+        user.setRole(UserRole.ROLE_ADMIN);
+        assertEquals(UserRole.ROLE_ADMIN, user.getRole());
+
+        user.setRole(UserRole.ROLE_USER);
+        assertEquals(UserRole.ROLE_USER, user.getRole());
+    }
+
+    @Test
+    void testSetAndIsEnabled() {
+        user.setEnabled(true);
+        assertTrue(user.isEnabled());
+
+        user.setEnabled(false);
+        assertFalse(user.isEnabled());
+    }
+}
+
+
+Arquivo: ./test/java/com/trabalho/controlefinancas/SecurityConfigTests.java
 //package com.trabalho.controlefinancas;
 //
-//import com.trabalho.controlefinancas.initializer.DataInitializer;
-//import com.trabalho.controlefinancas.model.Category;
-//import com.trabalho.controlefinancas.repository.CategoryRepository;
 //import org.junit.jupiter.api.BeforeEach;
 //import org.junit.jupiter.api.Test;
-//import org.springframework.beans.factory.annotation.Autowired;
-//import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-//import org.springframework.context.annotation.Import;
+//import static org.junit.jupiter.api.Assertions.assertTrue;
+//import org.springframework.boot.test.context.SpringBootTest;
+//import org.springframework.security.crypto.password.PasswordEncoder;
+//import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+//import org.springframework.security.test.context.support.WithMockUser;
+//import org.springframework.test.web.servlet.MockMvc;
+//import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+//import org.springframework.web.context.WebApplicationContext;
 //
-//import static org.assertj.core.api.Assertions.assertThat;
+//import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestBuilders.formLogin;
+//import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestBuilders.logout;
+//import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
+//import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+//import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
+//import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 //
-//@DataJpaTest
-//@Import(DataInitializer.class) // Importa o DataInitializer para ser testado
-//public class DataInitializerTests {
+//@SpringBootTest
+//class SecurityConfigTests {
 //
-//    @Autowired
-//    private CategoryRepository repository;
+//    private MockMvc mockMvc;
 //
-//    @Autowired
-//    private DataInitializer dataInitializer;
+//    private final WebApplicationContext context;
+//
+//    public SecurityConfigTests(WebApplicationContext context) {
+//        this.context = context;
+//    }
 //
 //    @BeforeEach
-//    public void setup() {
-//        repository.deleteAll(); // Limpa o repositório antes de cada teste para garantir consistência
+//    void setUp() {
+//        mockMvc = MockMvcBuilders.webAppContextSetup(context)
+//                .apply(springSecurity())
+//                .build();
 //    }
-//
-////    @Test
-////    public void testRunShouldInitializeDataWhenRepositoryIsEmpty() throws Exception {
-////        // Executa o método run para inicializar os dados
-////        dataInitializer.run(null);
-////
-////        // Verifica se as categorias foram salvas corretamente
-////        assertThat(repository.count()).isEqualTo(4); // Espera 4 categorias
-////
-////        // Verifica se uma categoria específica existe
-////        assertThat(repository.findByUser("Alimentação")).isNotNull();
-////        assertThat(repository.findByUser("Transporte")).isNotNull();
-////        assertThat(repository.findByUser("Saúde")).isNotNull();
-////        assertThat(repository.findByUser("Salário")).isNotNull();
-////    }
 //
 //    @Test
-//    public void testRunShouldNotInitializeDataWhenRepositoryIsNotEmpty() throws Exception {
-//        // Configura o repositório com dados iniciais
-//        repository.save(new Category("Teste", "Categoria de teste"));
+//    @WithMockUser(username = "teste", roles = "USER")
+//    void testAuthenticatedEndpointsRequireLogin() throws Exception {
+//        mockMvc.perform(get("/transactions"))
+//                .andExpect(status().isOk());
+//    }
 //
-//        // Executa o método run novamente
-//        dataInitializer.run(null);
+//    @Test
+//    void testFormLogin() throws Exception {
+//        mockMvc.perform(formLogin().user("teste").password("teste"))
+//                .andExpect(status().is3xxRedirection())
+//                .andExpect(redirectedUrl("/transactions"));
+//    }
 //
-//        // Verifica que a contagem ainda é 1, pois o DataInitializer não deve adicionar novas categorias
-//        assertThat(repository.count()).isEqualTo(1);
+//    @Test
+//    void testLogout() throws Exception {
+//        mockMvc.perform(logout())
+//                .andExpect(status().is3xxRedirection())
+//                .andExpect(redirectedUrl("/"));
+//    }
+//
+//    @Test
+//    void testPasswordEncoder() {
+//        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+//        String rawPassword = "teste";
+//        String encodedPassword = passwordEncoder.encode(rawPassword);
+//
+//        assertTrue(passwordEncoder.matches(rawPassword, encodedPassword));
 //    }
 //}
+
+Arquivo: ./test/java/com/trabalho/controlefinancas/UserServiceTests.java
+package com.trabalho.controlefinancas;
+
+import com.trabalho.controlefinancas.service.UserService;
+import com.trabalho.controlefinancas.model.User;
+import com.trabalho.controlefinancas.repository.UserRepository;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
+
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+class UserServiceTests {
+
+    @Mock
+    private UserRepository userRepository;
+
+    @Mock
+    private PasswordEncoder passwordEncoder;
+
+    @InjectMocks
+    private UserService userService;
+
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
+    }
+
+    @Test
+    void registro_SalvaUserQuantoNaoExiste() {
+        String username = "testeUser";
+        String password = "testeSenha";
+
+        when(userRepository.findByUsername(username)).thenReturn(Optional.empty());
+        when(passwordEncoder.encode(password)).thenReturn("encodedSenha");
+
+        userService.registerUser(username, password);
+
+        verify(userRepository, times(1)).save(any(User.class));
+    }
+
+    @Test
+    void registro_LancaExcecaoQuandoUserExiste() {
+        String username = "userExistente";
+        String password = "senhaTeste";
+
+        when(userRepository.findByUsername(username)).thenReturn(Optional.of(new User(username, password)));
+
+        Exception exception = assertThrows(RuntimeException.class, () -> {
+            userService.registerUser(username, password);
+        });
+
+        assertEquals("Username already exists", exception.getMessage());
+        verify(userRepository, never()).save(any(User.class));
+    }
+
+    @Test
+    void findUserByUsername_RetornaUserQuandoExiste() {
+        String username = "userExistente";
+        User mockUser = new User(username, "senhaTeste");
+
+        when(userRepository.findByUsername(username)).thenReturn(Optional.of(mockUser));
+
+        User result = userService.findUserByUsername(username);
+
+        assertNotNull(result);
+        assertEquals(username, result.getUsername());
+        verify(userRepository, times(2)).findByUsername(username);
+    }
+
+    @Test
+    void findUserByUsername_LancaExcecaoQuandoUserNaoExiste() {
+        String username = "userInexistente";
+
+        when(userRepository.findByUsername(username)).thenReturn(Optional.empty());
+
+        Exception exception = assertThrows(RuntimeException.class, () -> {
+            userService.findUserByUsername(username);
+        });
+
+        assertEquals("Username doesn't exists", exception.getMessage());
+    }
+
+    @Test
+    void loadUserByUsername_RetornaUserDetailsQuandoExiste() {
+        String username = "userExistente";
+        User mockUser = new User(username, "senhaTeste");
+
+        when(userRepository.findByUsername(username)).thenReturn(Optional.of(mockUser));
+
+        UserDetails result = userService.loadUserByUsername(username);
+
+        assertNotNull(result);
+        assertEquals(username, result.getUsername());
+    }
+
+    @Test
+    void loadUserByUsername_LancaExcecaoQuandoUserNaoExiste() {
+        String username = "userInexistente";
+
+        when(userRepository.findByUsername(username)).thenReturn(Optional.empty());
+
+        Exception exception = assertThrows(UsernameNotFoundException.class, () -> {
+            userService.loadUserByUsername(username);
+        });
+
+        assertEquals("Usuário de nome \"" + username + "\" não foi achado", exception.getMessage());
+    }
+
+    @Test
+    void loginUser_RetornaTrueQuandoUserESenhaDaoMatch() {
+        String username = "userValido";
+        String password = "senhaTeste";
+        User mockUser = new User(username, password);
+
+        when(userRepository.findByUsername(username)).thenReturn(Optional.of(mockUser));
+
+        boolean result = userService.loginUser(username, password);
+
+        assertTrue(result);
+    }
+
+    @Test
+    void loginUser_RetornaFalsaQuandoSenhaErrada() {
+        String username = "userValido";
+        String password = "senhaErrada";
+        User mockUser = new User(username, "senhaCorreta");
+
+        when(userRepository.findByUsername(username)).thenReturn(Optional.of(mockUser));
+
+        boolean result = userService.loginUser(username, password);
+
+        assertFalse(result);
+    }
+
+    @Test
+    void loginUser_RetornaFalsoQuandoUserNaoExiste() {
+        String username = "userInexistente";
+        String password = "senhaTeste";
+
+        when(userRepository.findByUsername(username)).thenReturn(Optional.empty());
+
+        boolean result = userService.loginUser(username, password);
+
+        assertFalse(result);
+    }
+}
+
+Arquivo: ./test/java/com/trabalho/controlefinancas/TransactionServiceTests.java
+package com.trabalho.controlefinancas;
+
+import com.trabalho.controlefinancas.model.Category;
+import com.trabalho.controlefinancas.model.Transaction;
+import com.trabalho.controlefinancas.model.TransactionType;
+import com.trabalho.controlefinancas.model.User;
+import com.trabalho.controlefinancas.repository.TransactionRepository;
+import com.trabalho.controlefinancas.service.TransactionService;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.access.AccessDeniedException;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+
+@ExtendWith(MockitoExtension.class)
+class TransactionServiceTest {
+
+    @Mock
+    private TransactionRepository transactionRepository;
+
+    @InjectMocks
+    private TransactionService transactionService;
+
+    @Test
+    void getTransacoesUser() {
+        User user = new User();
+        Transaction transaction1 = new Transaction();
+        Transaction transaction2 = new Transaction();
+        List<Transaction> transactions = List.of(transaction1, transaction2);
+
+        when(transactionRepository.findByUser(user)).thenReturn(transactions);
+
+        List<Transaction> result = transactionService.getUserTransactions(user);
+
+        assertEquals(2, result.size());
+        verify(transactionRepository, times(1)).findByUser(user);
+    }
+
+    @Test
+    void addTransacaoDentroOrcamento() {
+        User user = new User();
+        Category category = new Category();
+        category.setBudget(new BigDecimal("500"));
+        category.setName("Food");
+
+        Transaction transaction = new Transaction();
+        transaction.setUser(user);
+        transaction.setCategory(category);
+        transaction.setAmount(new BigDecimal("200"));
+        transaction.setType(TransactionType.DESPESA);
+        transaction.setDate(LocalDate.of(2024, 11, 20));
+
+        when(transactionRepository.findByCategoryAndUser(category, user)).thenReturn(List.of(transaction));
+
+        String result = transactionService.addTransaction(transaction);
+
+        assertNull(result);
+        verify(transactionRepository, times(1)).save(transaction);
+    }
+
+    @Test
+    void addTransacaoUltrapassaOrcamento() {
+        User user = new User();
+        Category category = new Category();
+        category.setBudget(new BigDecimal("300"));
+        category.setName("Transport");
+
+        Transaction transaction = new Transaction();
+        transaction.setUser(user);
+        transaction.setCategory(category);
+        transaction.setAmount(new BigDecimal("200"));
+        transaction.setType(TransactionType.DESPESA);
+        transaction.setDate(LocalDate.of(2024, 11, 20));
+
+        Transaction pastTransaction = new Transaction();
+        pastTransaction.setAmount(new BigDecimal("150"));
+        pastTransaction.setType(TransactionType.DESPESA);
+        pastTransaction.setDate(LocalDate.of(2024, 11, 10));
+
+        when(transactionRepository.findByCategoryAndUser(category, user)).thenReturn(List.of(pastTransaction));
+
+        String result = transactionService.addTransaction(transaction);
+
+        assertEquals("O valor das transações para a categoria Transport excedeu o orçamento mensal.", result);
+        verify(transactionRepository, times(1)).save(transaction);
+    }
+
+    @Test
+    void deletaTransacaoPorIdUserAutorizado() {
+        User user = new User();
+        user.setId(1L);
+
+        Transaction transaction = new Transaction();
+        transaction.setId(1L);
+        transaction.setUser(user);
+
+        when(transactionRepository.findById(1L)).thenReturn(Optional.of(transaction));
+
+        transactionService.deleteTransactionByIdAndUser(1L, user);
+
+        verify(transactionRepository, times(1)).delete(transaction);
+    }
+
+    @Test
+    void deletaTransacaoPorIdUserDesautorizado() {
+        User user = new User();
+        user.setId(1L);
+
+        User otherUser = new User();
+        otherUser.setId(2L);
+
+        Transaction transaction = new Transaction();
+        transaction.setId(1L);
+        transaction.setUser(otherUser);
+
+        when(transactionRepository.findById(1L)).thenReturn(Optional.of(transaction));
+
+        assertThrows(AccessDeniedException.class, () -> transactionService.deleteTransactionByIdAndUser(1L, user));
+
+        verify(transactionRepository, never()).delete(transaction);
+    }
+
+
+    @Test
+    void getFinancasMensal() {
+        User user = new User();
+        user.setId(1L);
+
+        Transaction t1 = new Transaction();
+        t1.setUser(user);
+        t1.setType(TransactionType.RECEITA);
+        t1.setDate(LocalDate.of(2023, 10, 1));
+        t1.setAmount(new BigDecimal("100"));
+
+        Transaction t2 = new Transaction();
+        t2.setUser(user);
+        t2.setType(TransactionType.RECEITA);
+        t2.setDate(LocalDate.of(2023, 11, 1));
+        t2.setAmount(new BigDecimal("200"));
+
+        Transaction t3 = new Transaction();
+        t3.setUser(user);
+        t3.setType(TransactionType.DESPESA);
+        t3.setDate(LocalDate.of(2023, 11, 2));
+        t3.setAmount(new BigDecimal("300"));
+
+        when(transactionRepository.findByUser(user)).thenReturn(List.of(t1, t2, t3));
+        Map<String, BigDecimal> summary = transactionService.getMonthlyFinancialSummary(user, 11, 2023);
+
+        assertEquals(new BigDecimal("100"), summary.get("initialBalance")); 
+        assertEquals(new BigDecimal("200"), summary.get("totalIncome"));    
+        assertEquals(new BigDecimal("300"), summary.get("totalExpense"));   
+        assertEquals(new BigDecimal("0"), summary.get("finalBalance"));     
+    }
+
+}
+
+
+Arquivo: ./test/java/com/trabalho/controlefinancas/CategoryServiceTests.java
+package com.trabalho.controlefinancas;
+
+import com.trabalho.controlefinancas.model.*;
+import com.trabalho.controlefinancas.repository.CategoryRepository;
+import com.trabalho.controlefinancas.repository.UserRepository;
+import com.trabalho.controlefinancas.service.CategoryService;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+
+import java.math.BigDecimal;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+class CategoryServiceTests {
+
+    @Mock
+    private CategoryRepository categoryRepository;
+
+    @Mock
+    private UserRepository userRepository;
+
+    @InjectMocks
+    private CategoryService categoryService;
+
+    private User user;
+    private Category category;
+    private Transaction transaction;
+
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
+        user = new User();
+        user.setId(1L);
+        user.setUsername("userTest");
+
+        category = new Category();
+        category.setId(1L);
+        category.setName("categoriaTest");
+        category.setBudget(new BigDecimal("1000"));
+        category.setUser(user);
+
+        transaction = new Transaction();
+        transaction.setId(1L);
+        transaction.setType(TransactionType.DESPESA);
+        transaction.setAmount(new BigDecimal("500"));
+
+        category.setTransactions(List.of(transaction));
+    }
+
+    @Test
+    void addCategoria_Sucesso() {
+        when(categoryRepository.save(any(Category.class))).thenReturn(category);
+
+        categoryService.addCategory(category);
+
+        verify(categoryRepository, times(1)).save(category);
+    }
+
+    @Test
+    void addCategoria_LancaExcecaoUserNull() {
+        category.setUser(null);
+
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+            categoryService.addCategory(category);
+        });
+
+        assertEquals("User cannot be null", exception.getMessage());
+    }
+
+    @Test
+    void deletaCategoriaPeloId_CatExiste() {
+        when(categoryRepository.findById(1L)).thenReturn(Optional.of(category));
+
+        categoryService.deleteCategoryById(1L);
+
+        verify(categoryRepository, times(1)).delete(category);
+    }
+
+    @Test
+    void deletaCategoriaPeloId_CatNaoExiste() {
+        when(categoryRepository.findById(1L)).thenReturn(Optional.empty());
+
+        categoryService.deleteCategoryById(1L);
+
+        verify(categoryRepository, never()).delete(any());
+    }
+
+    @Test
+    void getCategoriasPeloUser() {
+        when(categoryRepository.findByUser(user)).thenReturn(Arrays.asList(category));
+
+        List<Category> categories = categoryService.getAllCategoriesByUser(user);
+
+        assertEquals(1, categories.size());
+        assertEquals("categoriaTest", categories.get(0).getName());
+        verify(categoryRepository, times(1)).findByUser(user);
+    }
+
+    @Test
+    void orcamentoExcedeCategoria() {
+        when(categoryRepository.findById(1L)).thenReturn(Optional.of(category));
+
+        boolean isExceeded = categoryService.isBudgetExceededForCategory(user, 1L);
+
+        assertFalse(isExceeded); // Total expenses (500) < Budget (1000)
+    }
+
+    @Test
+    void orcamentoNaoExcedeCategoria() {
+        transaction.setAmount(new BigDecimal("1500"));
+        category.setTransactions(List.of(transaction));
+        when(categoryRepository.findById(1L)).thenReturn(Optional.of(category));
+
+        boolean isExceeded = categoryService.isBudgetExceededForCategory(user, 1L);
+
+        assertTrue(isExceeded); // Total expenses (1500) > Budget (1000)
+    }
+
+    @Test
+    void getOrcamentoRestanteParaCategoria() {
+        when(categoryRepository.findById(1L)).thenReturn(Optional.of(category));
+
+        BigDecimal remainingBudget = categoryService.getRemainingBudgetForCategory(user, 1L);
+
+        assertEquals(new BigDecimal("500"), remainingBudget); // Budget (1000) - Expenses (500)
+    }
+
+    @Test
+    void getOrcamentoRestanteParaCategoria_CategoriaNotFound() {
+        when(categoryRepository.findById(1L)).thenReturn(Optional.empty());
+
+        BigDecimal remainingBudget = categoryService.getRemainingBudgetForCategory(user, 1L);
+
+        assertEquals(BigDecimal.ZERO, remainingBudget);
+    }
+}
+
+
+
+Arquivo: ./test/java/com/trabalho/controlefinancas/TransactionModelTests.java
+package com.trabalho.controlefinancas;
+
+import org.junit.jupiter.api.Test;
+import com.trabalho.controlefinancas.model.Category;
+import com.trabalho.controlefinancas.model.Transaction;
+import com.trabalho.controlefinancas.model.User;
+import com.trabalho.controlefinancas.model.TransactionType;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+class TransactionModelTests {
+
+    @Test
+    void construtorTransacao() {
+        Category category = new Category("Food");
+        User user = new User();
+        LocalDate date = LocalDate.now();
+        Transaction transaction = new Transaction(
+            TransactionType.RECEITA,
+            category,
+            BigDecimal.valueOf(100.50),
+            date,
+            "Salario",
+            true,
+            user
+        );
+
+        assertEquals(TransactionType.RECEITA, transaction.getType());
+        assertEquals(category, transaction.getCategory());
+        assertEquals(BigDecimal.valueOf(100.50), transaction.getAmount());
+        assertEquals(date, transaction.getDate());
+        assertEquals("Salario", transaction.getDescription());
+        assertTrue(transaction.isRecurring());
+        assertEquals(user, transaction.getUser());
+    }
+
+    @Test
+    void getId() {
+        Transaction transaction = new Transaction();
+        transaction.setId(1L);
+        assertEquals(1L, transaction.getId());
+    }
+
+    @Test
+    void setGetDescricao() {
+        Transaction transaction = new Transaction();
+        transaction.setDescription("Grocery shopping");
+        assertEquals("Grocery shopping", transaction.getDescription());
+    }
+
+    @Test
+    void setEIsRecurring() {
+        Transaction transaction = new Transaction();
+        transaction.setRecurring(true);
+        assertTrue(transaction.isRecurring());
+
+        transaction.setRecurring(false);
+        assertFalse(transaction.isRecurring());
+    }
+}
+
+
 
 Arquivo: ./main/java/com/trabalho/controlefinancas/initializer/DataInitializer.java
 //package com.trabalho.controlefinancas.initializer;
@@ -120,6 +935,216 @@ Arquivo: ./main/java/com/trabalho/controlefinancas/initializer/DataInitializer.j
 
 
 
+Arquivo: ./main/java/com/trabalho/controlefinancas/controller/ExportController.java
+package com.trabalho.controlefinancas.controller;
+import com.trabalho.controlefinancas.model.Category;
+import com.trabalho.controlefinancas.model.Transaction;
+import com.trabalho.controlefinancas.model.User;
+import com.trabalho.controlefinancas.repository.CategoryRepository;
+import com.trabalho.controlefinancas.service.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.http.ResponseEntity;
+
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.*;
+
+@Controller
+public class ExportController {
+    @Autowired
+    private PdfExportService pdfExportService;
+    @Autowired
+    private ChartService chartService;
+    @Autowired
+    ThymeleafTemplateService templateService;
+    @Autowired
+    private CategoryRepository categoryRepository;
+    @Autowired
+    private TransactionService transactionService;
+    @Autowired
+    private CsvService csvService;
+
+
+    @GetMapping("/export-pdf")
+    public ResponseEntity<byte[]> exportPageToPdf(Model model, @AuthenticationPrincipal User user) throws IOException {
+        LocalDate currentDate = LocalDate.now();
+        int month = currentDate.getMonthValue();
+        int year = currentDate.getYear();
+
+        List<Transaction> transactions = transactionService.findByMonth(year,month,user);
+
+        Map<String, BigDecimal> summary = transactionService.getMonthlyFinancialSummary(user, month, year);
+
+        BigDecimal totalValue = transactions.stream()
+                .map(Transaction::getAmount) // Assuming `getAmount()` returns BigDecimal
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        List<Category> categories = categoryRepository.findByUser(user);
+
+        Map<String, Object> variables = new HashMap<>();
+        variables.put("transactions", transactions);
+        variables.put("categories", categories);
+        variables.put("initialBalance", summary.get("initialBalance"));
+        variables.put("totalIncome", summary.get("totalIncome"));
+        variables.put("totalExpense", summary.get("totalExpense"));
+        variables.put("finalBalance", summary.get("finalBalance"));
+
+
+        String htmlContent = templateService.renderTemplate("report", variables);
+        String pieChart = chartService.createExpensePieChartBase64(user);
+        String cashFlowChart = chartService.createCashFlowChartBase64(user);
+        htmlContent = pdfExportService.prepareHtmlWithChart(htmlContent, pieChart, cashFlowChart);
+
+        byte[] pdfBytes = pdfExportService.generatePdf(htmlContent);
+
+        return ResponseEntity.ok()
+                .header("Content-Disposition", "attachment; filename=relatorio.pdf")
+                .contentType(org.springframework.http.MediaType.APPLICATION_PDF)
+                .body(pdfBytes);
+    }
+
+    @GetMapping("/export-csv")
+    public ResponseEntity<byte[]> exportDataToCsv(Model model, @AuthenticationPrincipal User user) {
+
+        List<Transaction> transactions = transactionService.getUserTransactions(user);
+
+        List<String[]> data = new ArrayList<>();
+        data.add(new String[]{"ID","Tipo", "Descrição", "Valor", "Data", "Categoria", "É Recorrente?"});
+
+        // Converter cada transação em uma linha CSV
+        for (Transaction transaction : transactions) {
+            data.add(new String[]{
+                    transaction.getId().toString(),
+                    transaction.getType().toString(),
+                    transaction.getDescription(),
+                    String.valueOf(transaction.getAmount()),
+                    transaction.getDate().toString(),
+                    transaction.getCategory().getName(),
+                    transaction.isRecurringString()
+            });
+        }
+        byte[] csvBytes = csvService.generateCsv(data);
+
+        return ResponseEntity.ok()
+                .header("Content-Disposition", "attachment; filename=transacoes.csv")
+                .contentType(org.springframework.http.MediaType.TEXT_PLAIN)
+                .body(csvBytes);
+    }
+}
+
+
+Arquivo: ./main/java/com/trabalho/controlefinancas/controller/ResumeController.java
+package com.trabalho.controlefinancas.controller;
+
+import com.trabalho.controlefinancas.model.FinancialGoal;
+import com.trabalho.controlefinancas.model.User;
+import com.trabalho.controlefinancas.service.FinancialGoalService;
+import com.trabalho.controlefinancas.service.TransactionService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.GetMapping;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Map;
+
+@Controller
+public class ResumeController {
+
+    @Autowired
+    private TransactionService transactionService;
+
+    @Autowired
+    private FinancialGoalService financialGoalService;
+
+    @GetMapping("/monitoring")
+    public String getResumoFinanceiro(@AuthenticationPrincipal User user, Model model) {
+        LocalDate currentDate = LocalDate.now();
+        int month = currentDate.getMonthValue();
+        int year = currentDate.getYear();
+
+        Map<String, BigDecimal> summary = transactionService.getMonthlyFinancialSummary(user, month, year);
+        BigDecimal finalBalance = summary.get("finalBalance");
+
+        // Verificar metas com base no saldo final
+        financialGoalService.checkGoals(user, finalBalance);
+
+        List<FinancialGoal> goals = financialGoalService.getUserGoals(user);
+
+        model.addAttribute("initialBalance", summary.get("initialBalance"));
+        model.addAttribute("totalIncome", summary.get("totalIncome"));
+        model.addAttribute("totalExpense", summary.get("totalExpense"));
+        model.addAttribute("finalBalance", finalBalance);
+        model.addAttribute("goals", goals);
+
+        return "monitoring";
+    }
+
+    @PostMapping("/add-goal")
+    public String addGoal(
+            @RequestParam String description,
+            @RequestParam BigDecimal targetAmount,
+            @AuthenticationPrincipal User user) {
+        FinancialGoal goal = new FinancialGoal();
+        goal.setDescription(description);
+        goal.setTargetAmount(targetAmount);
+        goal.setAchieved(false);
+        goal.setUser(user);
+        financialGoalService.addFinancialGoal(goal);
+
+        return "redirect:/monitoring";
+    }
+}
+
+
+Arquivo: ./main/java/com/trabalho/controlefinancas/controller/ImportController.java
+package com.trabalho.controlefinancas.controller;
+import com.trabalho.controlefinancas.model.User;
+import com.trabalho.controlefinancas.service.CsvService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+@Controller
+public class ImportController {
+
+    @Autowired
+    private CsvService csvService;
+
+    @PostMapping("/import-csv")
+    public String importCSV(@RequestParam("file") MultipartFile file, RedirectAttributes redirectAttributes, @AuthenticationPrincipal User user) {
+        if (file.isEmpty()) {
+            redirectAttributes.addFlashAttribute("error", "Por favor, envie um arquivo válido.");
+            return "redirect:/categories"; // Redirecione para a página adequada
+        }
+
+        try {
+            // Processar o arquivo CSV
+            csvService.processCSV(file, user);
+
+            redirectAttributes.addFlashAttribute("message", "Arquivo CSV importado com sucesso!");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Erro ao importar o arquivo: " + e.getMessage());
+        }
+
+        return "redirect:/transactions";
+    }
+}
+
+
 Arquivo: ./main/java/com/trabalho/controlefinancas/controller/UserController.java
 package com.trabalho.controlefinancas.controller;
 
@@ -147,11 +1172,6 @@ public class UserController {
     @GetMapping("/loggedin")
     public String loggedin() {
         return "loggedin";
-    }
-
-    @GetMapping("/monitoring")
-    public String monitoring() {
-        return "monitoring";
     }
 
     @GetMapping("/")
@@ -330,6 +1350,23 @@ public class CategoryController {
         categoryService.deleteCategoryById(id);
         return "redirect:/categories";
     }
+
+    @PostMapping("/edit-category")
+    public String editCategory(
+            @RequestParam Long id,
+            @RequestParam String name,
+            @RequestParam(required = false) BigDecimal budget,
+            @RequestParam(required = false) String description,
+            RedirectAttributes redirectAttributes) {
+        Category category = categoryService.findById(id);
+        category.setName(name);
+        category.setBudget(budget);
+        category.setDescription(description);
+        categoryService.updateCategory(category);
+
+        redirectAttributes.addFlashAttribute("message", "Categoria editada com sucesso!");
+        return "redirect:/categories";
+    }
 }
 
 Arquivo: ./main/java/com/trabalho/controlefinancas/controller/TransactionController.java
@@ -369,7 +1406,8 @@ public class TransactionController {
         BigDecimal totalValue = transactions.stream()
                 .map(Transaction::getAmount) // Assuming `getAmount()` returns BigDecimal
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
-
+        List<Category> categories = categoryRepository.findByUser(user);
+        model.addAttribute("categories", categories);
         model.addAttribute("totalValue", totalValue);
         model.addAttribute("transactions", transactions);
         return "transactions";
@@ -424,6 +1462,29 @@ public class TransactionController {
         transactionService.deleteTransactionByIdAndUser(id, user);
         return "redirect:/transactions";
     }
+
+    @PostMapping("/edit-transaction")
+    public String editTransaction(
+            @RequestParam String type,
+            @RequestParam Long id,
+            @RequestParam Long category,
+            @RequestParam String date,
+            @RequestParam String description,
+            @RequestParam BigDecimal amount,
+            RedirectAttributes redirectAttributes) {
+
+        Transaction transaction = transactionService.findById(id);
+        transaction.setType(TransactionType.valueOf(type.toUpperCase()));
+        transaction.setDate(LocalDate.parse(date));
+        transaction.setDescription(description);
+        transaction.setCategory(categoryRepository.findById(category).get());
+        transaction.setAmount(amount);
+
+        transactionService.updateTransaction(transaction);
+
+        redirectAttributes.addFlashAttribute("message", "Transação editada com sucesso!");
+        return "redirect:/transactions";
+    }
 }
 
 Arquivo: ./main/java/com/trabalho/controlefinancas/exception/BudgetExceededException.java
@@ -448,6 +1509,21 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByUsername(String username);
 }
 
+Arquivo: ./main/java/com/trabalho/controlefinancas/repository/FinancialGoalRepository.java
+package com.trabalho.controlefinancas.repository;
+
+import com.trabalho.controlefinancas.model.FinancialGoal;
+import com.trabalho.controlefinancas.model.User;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+
+@Repository
+public interface FinancialGoalRepository extends JpaRepository<FinancialGoal, Long> {
+    List<FinancialGoal> findByUser(User user);
+}
+
 Arquivo: ./main/java/com/trabalho/controlefinancas/repository/CategoryRepository.java
 package com.trabalho.controlefinancas.repository;
 
@@ -463,6 +1539,7 @@ import java.util.Optional;
 public interface CategoryRepository extends JpaRepository<Category, Long> {
 
     List<Category> findByUser(User user);
+    Optional<Category> findByNameAndUser(String name, User user);
 }
 
 
@@ -472,6 +1549,8 @@ package com.trabalho.controlefinancas.repository;
 import com.trabalho.controlefinancas.model.Category;
 import com.trabalho.controlefinancas.model.Transaction;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import com.trabalho.controlefinancas.model.User;
 
@@ -485,6 +1564,10 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
     List<Transaction> findByUser(User user);
 
     List<Transaction> findByCategoryAndUser(Category category, User user);
+
+    @Query("SELECT t FROM Transaction t WHERE YEAR(t.date) = :year AND MONTH(t.date) = :month AND t.user = :user")
+    List<Transaction> findTransactionsByMonthAndUser(@Param("year") int year, @Param("month") int month, @Param("user") User user);
+
 }
 
 
@@ -496,6 +1579,10 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
 public class ControleFinancasApplication {
+    /**
+     * Método principal que inicia a aplicação.
+     *
+     */
 
     public static void main(String[] args) {
         SpringApplication.run(ControleFinancasApplication.class, args);
@@ -911,8 +1998,116 @@ public class Transaction {
         return isRecurring;
     }
 
+    public String isRecurringString(){
+        if (isRecurring()){
+            return  "Sim";
+        }
+        return "Não";
+    }
+
     public void setRecurring(boolean isRecurring) {
         this.isRecurring = isRecurring;
+    }
+}
+
+
+Arquivo: ./main/java/com/trabalho/controlefinancas/model/FinancialGoal.java
+package com.trabalho.controlefinancas.model;
+
+import jakarta.persistence.*;
+import java.math.BigDecimal;
+
+@Entity
+@Table(name = "financial_goal")
+public class FinancialGoal {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false)
+    private String description;
+
+    @Column(nullable = false)
+    private BigDecimal targetAmount;
+
+    @Column(nullable = false)
+    private boolean achieved;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
+
+    // Getters e Setters
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public BigDecimal getTargetAmount() {
+        return targetAmount;
+    }
+
+    public void setTargetAmount(BigDecimal targetAmount) {
+        this.targetAmount = targetAmount;
+    }
+
+    public boolean isAchieved() {
+        return achieved;
+    }
+
+    public void setAchieved(boolean achieved) {
+        this.achieved = achieved;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+}
+
+
+Arquivo: ./main/java/com/trabalho/controlefinancas/service/PdfExportService.java
+package com.trabalho.controlefinancas.service;
+import org.xhtmlrenderer.pdf.ITextRenderer;
+import org.springframework.stereotype.Service;
+
+import java.io.ByteArrayOutputStream;
+import java.io.OutputStream;
+
+@Service
+public class PdfExportService {
+
+    public byte[] generatePdf(String htmlContent) {
+        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+            ITextRenderer renderer = new ITextRenderer();
+            renderer.setDocumentFromString(htmlContent);
+            renderer.layout();
+            renderer.createPDF(outputStream);
+            return outputStream.toByteArray();
+        } catch (Exception e) {
+            throw new RuntimeException("Error generating PDF", e);
+        }
+    }
+
+    public String prepareHtmlWithChart(String htmlTemplate, String chartPieBase64, String chartCashFlowBase64) {
+        // Substituir o marcador ${graficoBase64} pelo gráfico gerado
+        return htmlTemplate.replace("${graficoPieBase64}", chartPieBase64)
+                .replace("${graficoCashFlowBase64}", chartCashFlowBase64);
     }
 }
 
@@ -1006,8 +2201,141 @@ public class CategoryService {
         }
         return BigDecimal.ZERO;
     }
+
+    /**
+     * Busca uma categoria pelo ID.
+     *
+     * @param id O ID da categoria.
+     * @return A categoria correspondente.
+     * @throws IllegalArgumentException Se a categoria não for encontrada.
+     */
+    public Category findById(Long id) {
+        return categoryRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Categoria não encontrada com o ID: " + id));
+    }
+
+    /**
+     * Atualiza os dados de uma categoria existente.
+     *
+     * @param category A categoria com os novos dados.
+     */
+    public void updateCategory(Category category) {
+        if (!categoryRepository.existsById(category.getId())) {
+            throw new IllegalArgumentException("Categoria não encontrada com o ID: " + category.getId());
+        }
+        categoryRepository.save(category);
+    }
+
+    public Category findByNameAndUser(String name, User user) {
+        return categoryRepository.findByNameAndUser(name, user)
+                .orElseThrow(() -> new IllegalArgumentException("Categoria não encontrada com o Nome e User: " + name + " e " + user.getUsername()));
+    }
 }
 
+
+
+Arquivo: ./main/java/com/trabalho/controlefinancas/service/CsvService.java
+package com.trabalho.controlefinancas.service;
+import com.trabalho.controlefinancas.model.Category;
+import com.trabalho.controlefinancas.model.Transaction;
+import com.trabalho.controlefinancas.model.TransactionType;
+import com.trabalho.controlefinancas.model.User;
+import com.trabalho.controlefinancas.repository.TransactionRepository;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVPrinter;
+import org.apache.commons.csv.CSVRecord;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.ByteArrayOutputStream;
+import java.time.LocalDate;
+import java.io.OutputStreamWriter;
+import java.util.List;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+
+import static java.lang.Long.parseLong;
+
+@Service
+public class CsvService {
+    @Autowired
+    CategoryService categoryService = new CategoryService();
+
+    @Autowired
+    TransactionService transactionService = new TransactionService();
+
+    public byte[] generateCsv(List<String[]> data) {
+        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+             OutputStreamWriter writer = new OutputStreamWriter(outputStream);
+             CSVPrinter csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT)) {
+
+            for (String[] record : data) {
+                csvPrinter.printRecord(record);
+            }
+
+            csvPrinter.flush();
+            return outputStream.toByteArray();
+        } catch (Exception e) {
+            throw new RuntimeException("Error generating CSV", e);
+        }
+    }
+
+    public void processCSV(MultipartFile file, User user) throws Exception {
+
+
+        List<Transaction> transactions = new ArrayList<>();
+
+        try (Reader reader = new BufferedReader(new InputStreamReader(file.getInputStream()))) {
+            Iterable<CSVRecord> records = CSVFormat.DEFAULT
+                    .withHeader("ID", "Tipo", "Descrição", "Valor", "Data", "Categoria", "É Recorrente?")
+                    .withFirstRecordAsHeader()
+                    .parse(reader);
+
+            for (CSVRecord record : records) {
+                String id = record.get("ID");
+                String type = record.get("Tipo");
+                String description = record.get("Descrição");
+                String amount = record.get("Valor");
+                String date = record.get("Data");
+                String categoryName = record.get("Categoria");
+                String isRecurring = record.get("É Recorrente?");
+
+                LocalDate localDate = null;
+                try {
+                    if (date != null && !date.isEmpty()) {
+                        localDate = LocalDate.parse(date); // Formato esperado: YYYY-MM-DD
+                    }
+                } catch (Exception e) {
+                    throw new IllegalArgumentException("Formato de data inválido na linha: " + record.getRecordNumber());
+                }
+                // Construa a entidade
+                Transaction transaction = new Transaction();
+
+                Category category = categoryService.findByNameAndUser(categoryName, user);
+
+                transaction.setType(type.equals("RECEITA") ? TransactionType.RECEITA: TransactionType.DESPESA);
+                transaction.setAmount(amount.isEmpty() ? null : new BigDecimal(amount));
+                transaction.setDescription(description);
+                transaction.setDate(localDate);
+                transaction.setCategory(category);
+                transaction.setRecurring(isRecurring.equals("Sim"));
+                transaction.setUser(user);
+
+                transactions.add(transaction);
+            }
+        }
+
+        for (Transaction transaction:transactions) {
+            transactionService.addTransaction(transaction);
+
+        }
+    }
+
+}
 
 
 Arquivo: ./main/java/com/trabalho/controlefinancas/service/ChartService.java
@@ -1023,13 +2351,16 @@ import com.trabalho.controlefinancas.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.Base64;
 import java.math.BigDecimal;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Date;
+import java.util.*;
 import java.time.ZoneId;
 
+
+import org.jfree.chart.ChartUtils;
 import org.jfree.chart.axis.DateAxis;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.plot.XYPlot;
@@ -1037,8 +2368,6 @@ import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.data.time.Day;
 import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
-
-import java.util.Comparator;
 
 @Service
 public class ChartService {
@@ -1085,6 +2414,13 @@ public class ChartService {
         return chart; // Retorna o gráfico gerado
     }
 
+    public String createExpensePieChartBase64(User user) throws IOException {
+        JFreeChart chart =createExpensePieChart(user);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ChartUtils.writeChartAsPNG(baos, chart, 600, 400);
+        return "data:image/png;base64," + Base64.getEncoder().encodeToString(baos.toByteArray());
+    }
+
     public JFreeChart createCashFlowChart(User user) {
         List<Transaction> transactions = transactionService.getUserTransactions(user);
 
@@ -1119,6 +2455,39 @@ public class ChartService {
 
         return new JFreeChart("Fluxo de Caixa", JFreeChart.DEFAULT_TITLE_FONT, plot, true);
     }
+
+    public String createCashFlowChartBase64(User user) throws IOException {
+        JFreeChart chart =createCashFlowChart(user);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ChartUtils.writeChartAsPNG(baos, chart, 600, 400);
+        return "data:image/png;base64," + Base64.getEncoder().encodeToString(baos.toByteArray());
+    }
+}
+
+
+Arquivo: ./main/java/com/trabalho/controlefinancas/service/ThymeleafTemplateService.java
+package com.trabalho.controlefinancas.service;
+
+import org.springframework.stereotype.Service;
+import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.context.Context;
+
+import java.util.Map;
+
+@Service
+public class ThymeleafTemplateService {
+
+    private final TemplateEngine templateEngine;
+
+    public ThymeleafTemplateService(TemplateEngine templateEngine) {
+        this.templateEngine = templateEngine;
+    }
+
+    public String renderTemplate(String templateName, Map<String, Object> variables) {
+        Context context = new Context();
+        context.setVariables(variables);
+        return templateEngine.process(templateName, context);
+    }
 }
 
 
@@ -1137,7 +2506,9 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class TransactionService {
@@ -1148,10 +2519,6 @@ public class TransactionService {
     public List<Transaction> getUserTransactions(User user) {
         return transactionRepository.findByUser(user);
     }
-
-//    public Transaction addTransaction(Transaction transaction) {
-//        return transactionRepository.save(transaction);
-//    }
 
     public String addTransaction(Transaction transaction) {
         Category category = transaction.getCategory();
@@ -1206,7 +2573,108 @@ public class TransactionService {
 
         transactionRepository.delete(transaction);
     }
+
+    public Map<String, BigDecimal> getMonthlyFinancialSummary(User user, int month, int year) {
+        List<Transaction> transactions = transactionRepository.findByUser(user);
+
+        // Calcular o saldo inicial (todas as receitas - despesas até o último dia do mês anterior)
+        BigDecimal initialBalance = transactions.stream()
+                .filter(t -> t.getDate().isBefore(LocalDate.of(year, month, 1)))
+                .map(t -> t.getType() == TransactionType.RECEITA ? t.getAmount() : t.getAmount().negate())
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        BigDecimal totalIncome = transactions.stream()
+                .filter(t -> t.getType() == TransactionType.RECEITA &&
+                        t.getDate().getMonthValue() == month &&
+                        t.getDate().getYear() == year)
+                .map(Transaction::getAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        BigDecimal totalExpense = transactions.stream()
+                .filter(t -> t.getType() == TransactionType.DESPESA &&
+                        t.getDate().getMonthValue() == month &&
+                        t.getDate().getYear() == year)
+                .map(Transaction::getAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        BigDecimal finalBalance = initialBalance.add(totalIncome).subtract(totalExpense);
+
+        Map<String, BigDecimal> summary = new HashMap<>();
+        summary.put("initialBalance", initialBalance);
+        summary.put("totalIncome", totalIncome);
+        summary.put("totalExpense", totalExpense);
+        summary.put("finalBalance", finalBalance);
+
+        return summary;
+    }
+
+    /**
+     * Busca uma transação pelo ID.
+     *
+     * @param id O ID da transação.
+     * @return A transação correspondente.
+     * @throws IllegalArgumentException Se a transação não for encontrada.
+     */
+    public Transaction findById(Long id) {
+        return transactionRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Transação não encontrada com o ID: " + id));
+    }
+
+    /**
+     * Atualiza os dados de uma transação existente.
+     *
+     * @param transaction A transação com os novos dados.
+     * @throws IllegalArgumentException Se a transação não for encontrada.
+     */
+    public void updateTransaction(Transaction transaction) {
+        if (!transactionRepository.existsById(transaction.getId())) {
+            throw new IllegalArgumentException("Transação não encontrada com o ID: " + transaction.getId());
+        }
+        transactionRepository.save(transaction);
+    }
+
+    public List<Transaction> findByMonth(int year, int month, User user){
+        return transactionRepository.findTransactionsByMonthAndUser(year, month, user);
+    }
 }
+
+Arquivo: ./main/java/com/trabalho/controlefinancas/service/FinancialGoalService.java
+package com.trabalho.controlefinancas.service;
+
+import com.trabalho.controlefinancas.model.FinancialGoal;
+import com.trabalho.controlefinancas.model.User;
+import com.trabalho.controlefinancas.repository.FinancialGoalRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+import java.util.List;
+
+@Service
+public class FinancialGoalService {
+
+    @Autowired
+    private FinancialGoalRepository financialGoalRepository;
+
+    public void addFinancialGoal(FinancialGoal goal) {
+        financialGoalRepository.save(goal);
+    }
+
+    public List<FinancialGoal> getUserGoals(User user) {
+        return financialGoalRepository.findByUser(user);
+    }
+
+    public void checkGoals(User user, BigDecimal currentBalance) {
+        List<FinancialGoal> goals = financialGoalRepository.findByUser(user);
+        for (FinancialGoal goal : goals) {
+            if (!goal.isAchieved() && currentBalance.compareTo(goal.getTargetAmount()) >= 0) {
+                goal.setAchieved(true);
+                financialGoalRepository.save(goal);
+            }
+        }
+    }
+}
+
 
 Arquivo: ./main/java/com/trabalho/controlefinancas/service/UserService.java
 package com.trabalho.controlefinancas.service;

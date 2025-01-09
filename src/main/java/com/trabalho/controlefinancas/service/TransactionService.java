@@ -1,26 +1,29 @@
 package com.trabalho.controlefinancas.service;
 
-import com.trabalho.controlefinancas.exception.BudgetExceededException;
-import com.trabalho.controlefinancas.model.Category;
-import com.trabalho.controlefinancas.model.Transaction;
-import com.trabalho.controlefinancas.model.TransactionType;
-import com.trabalho.controlefinancas.model.User;
-import com.trabalho.controlefinancas.repository.TransactionRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.access.AccessDeniedException;
-import org.springframework.stereotype.Service;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.stereotype.Service;
+
+import com.trabalho.controlefinancas.model.Category;
+import com.trabalho.controlefinancas.model.Transaction;
+import com.trabalho.controlefinancas.model.TransactionType;
+import com.trabalho.controlefinancas.model.User;
+import com.trabalho.controlefinancas.repository.TransactionRepository;
+
 @Service
 public class TransactionService {
 
-    @Autowired
-    private TransactionRepository transactionRepository;
+    private final TransactionRepository transactionRepository;
+
+    // Construtor para injeção de dependência
+    public TransactionService(TransactionRepository transactionRepository) {
+        this.transactionRepository = transactionRepository;
+    }
 
     public List<Transaction> getUserTransactions(User user) {
         return transactionRepository.findByUser(user);
@@ -39,7 +42,9 @@ public class TransactionService {
         // Salva a transação mesmo se exceder o limite do mês
         transactionRepository.save(transaction);
 
-        if (transaction.getType() == TransactionType.RECEITA || category.getBudget() == null) return null;
+        if (transaction.getType() == TransactionType.RECEITA || category.getBudget() == null) {
+            return null;
+        }
         // se for Receita ou budget não existir
         // o limite do mês não precisa ser calculado
 

@@ -76,6 +76,21 @@
 </nav>
 
 <div class="container mt-5">
+  <h2>Metas Financeiras</h2>
+  <form action="/add-goal" method="post">
+    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+    <input type="text" name="description" placeholder="Descrição da meta" required />
+    <input type="number" name="targetAmount" step="0.01" placeholder="Valor da meta" required />
+    <button type="submit">Adicionar Meta</button>
+  </form>
+
+  <ul>
+    <li th:each="goal : ${goals}">
+      <span th:text="${goal.description}">Descrição</span> -
+      <span th:text="${goal.targetAmount}">Meta</span> -
+      <span th:text="${goal.achieved} ? 'Atingida' : 'Em progresso'">Status</span>
+    </li>
+  </ul>
   <div class="row">
     <div class="col-md-6 mb-4">
       <div class="chart-container">

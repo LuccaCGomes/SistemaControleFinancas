@@ -1,21 +1,27 @@
 package com.trabalho.controlefinancas;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.Arrays;
 
-import com.trabalho.controlefinancas.model.*;
-import com.trabalho.controlefinancas.service.ChartService;
-import com.trabalho.controlefinancas.service.TransactionService;
 import org.jfree.chart.JFreeChart;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import org.mockito.MockitoAnnotations;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.Arrays;
+import com.trabalho.controlefinancas.model.Category;
+import com.trabalho.controlefinancas.model.Transaction;
+import com.trabalho.controlefinancas.model.TransactionType;
+import com.trabalho.controlefinancas.model.User;
+import com.trabalho.controlefinancas.service.ChartService;
+import com.trabalho.controlefinancas.service.TransactionService;
 
 
 class ChartServiceTests {

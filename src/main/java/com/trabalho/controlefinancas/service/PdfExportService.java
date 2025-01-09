@@ -1,9 +1,8 @@
 package com.trabalho.controlefinancas.service;
-import org.xhtmlrenderer.pdf.ITextRenderer;
-import org.springframework.stereotype.Service;
-
 import java.io.ByteArrayOutputStream;
-import java.io.OutputStream;
+
+import org.springframework.stereotype.Service;
+import org.xhtmlrenderer.pdf.ITextRenderer;
 
 @Service
 public class PdfExportService {
