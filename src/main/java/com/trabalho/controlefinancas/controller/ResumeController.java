@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import com.trabalho.controlefinancas.model.FinancialGoal;
 import com.trabalho.controlefinancas.model.User;
+import com.trabalho.controlefinancas.model.UserRole;
 import com.trabalho.controlefinancas.service.FinancialGoalService;
 import com.trabalho.controlefinancas.service.TransactionService;
 
@@ -48,6 +49,7 @@ public class ResumeController {
         model.addAttribute("totalExpense", summary.get("totalExpense"));
         model.addAttribute("finalBalance", finalBalance);
         model.addAttribute("goals", goals);
+        model.addAttribute("user", user);
 
         return "monitoring";
     }
