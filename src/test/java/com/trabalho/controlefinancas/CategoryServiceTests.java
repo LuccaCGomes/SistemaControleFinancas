@@ -1,24 +1,28 @@
 package com.trabalho.controlefinancas;
 
-import com.trabalho.controlefinancas.model.*;
+import com.trabalho.controlefinancas.model.Category;
+import com.trabalho.controlefinancas.model.Transaction;
+import com.trabalho.controlefinancas.model.TransactionType;
+import com.trabalho.controlefinancas.model.User;
 import com.trabalho.controlefinancas.repository.CategoryRepository;
 import com.trabalho.controlefinancas.repository.UserRepository;
 import com.trabalho.controlefinancas.service.CategoryService;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-class CategoryServiceTests {
+@ExtendWith(MockitoExtension.class)
+class CategoryServiceTest {
 
     @Mock
     private CategoryRepository categoryRepository;
@@ -29,34 +33,11 @@ class CategoryServiceTests {
     @InjectMocks
     private CategoryService categoryService;
 
-    private User user;
-    private Category category;
-    private Transaction transaction;
-
-    @BeforeEach
-    void setUp() {
-        MockitoAnnotations.openMocks(this);
-        user = new User();
-        user.setId(1L);
-        user.setUsername("userTest");
-
-        category = new Category();
-        category.setId(1L);
-        category.setName("categoriaTest");
-        category.setBudget(new BigDecimal("1000"));
-        category.setUser(user);
-
-        transaction = new Transaction();
-        transaction.setId(1L);
-        transaction.setType(TransactionType.DESPESA);
-        transaction.setAmount(new BigDecimal("500"));
-
-        category.setTransactions(List.of(transaction));
-    }
-
     @Test
-    void addCategoria_Sucesso() {
-        when(categoryRepository.save(any(Category.class))).thenReturn(category);
+    void addCategory_ValidCategory_SavesCategory() {
+        Category category = new Category();
+        User user = new User();
+        category.setUser(user);
 
         categoryService.addCategory(category);
 
@@ -64,81 +45,210 @@ class CategoryServiceTests {
     }
 
     @Test
-    void addCategoria_LancaExcecaoUserNull() {
+    void addCategory_NullUser_ThrowsException() {
+        Category category = new Category();
         category.setUser(null);
 
-        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-            categoryService.addCategory(category);
-        });
-
-        assertEquals("User cannot be null", exception.getMessage());
+        assertThrows(IllegalArgumentException.class, () -> categoryService.addCategory(category));
+        verify(categoryRepository, never()).save(any());
     }
 
     @Test
-    void deletaCategoriaPeloId_CatExiste() {
-        when(categoryRepository.findById(1L)).thenReturn(Optional.of(category));
+    void deleteCategoryById_ExistingCategory_DeletesCategory() {
+        Long categoryId = 1L;
+        Category category = new Category();
+        when(categoryRepository.findById(categoryId)).thenReturn(Optional.of(category));
 
-        categoryService.deleteCategoryById(1L);
+        categoryService.deleteCategoryById(categoryId);
 
         verify(categoryRepository, times(1)).delete(category);
     }
 
     @Test
-    void deletaCategoriaPeloId_CatNaoExiste() {
-        when(categoryRepository.findById(1L)).thenReturn(Optional.empty());
+    void deleteCategoryById_NonExistingCategory_NoAction() {
+        Long categoryId = 1L;
+        when(categoryRepository.findById(categoryId)).thenReturn(Optional.empty());
 
-        categoryService.deleteCategoryById(1L);
+        categoryService.deleteCategoryById(categoryId);
 
         verify(categoryRepository, never()).delete(any());
     }
 
     @Test
-    void getCategoriasPeloUser() {
-        when(categoryRepository.findByUser(user)).thenReturn(Arrays.asList(category));
+    void getAllCategoriesByUser_ValidUser_ReturnsCategories() {
+        User user = new User();
+        List<Category> expectedCategories = List.of(new Category(), new Category());
+        when(categoryRepository.findByUser(user)).thenReturn(expectedCategories);
 
-        List<Category> categories = categoryService.getAllCategoriesByUser(user);
+        List<Category> result = categoryService.getAllCategoriesByUser(user);
 
-        assertEquals(1, categories.size());
-        assertEquals("categoriaTest", categories.get(0).getName());
+        assertEquals(expectedCategories, result);
         verify(categoryRepository, times(1)).findByUser(user);
     }
 
     @Test
-    void orcamentoExcedeCategoria() {
-        when(categoryRepository.findById(1L)).thenReturn(Optional.of(category));
+    void isBudgetExceededForCategory_ValidCategoryNotExceeded_ReturnsFalse() {
+        User user = new User();
+        Long categoryId = 1L;
+        Category category = new Category();
+        category.setUser(user);
+        category.setBudget(new BigDecimal("1000"));
 
-        boolean isExceeded = categoryService.isBudgetExceededForCategory(user, 1L);
+        List<Transaction> transactions = new ArrayList<>();
+        Transaction t1 = new Transaction();
+        t1.setType(TransactionType.DESPESA);
+        t1.setAmount(new BigDecimal("500"));
+        transactions.add(t1);
+        category.setTransactions(transactions);
 
-        assertFalse(isExceeded); // Total expenses (500) < Budget (1000)
+        when(categoryRepository.findById(categoryId)).thenReturn(Optional.of(category));
+
+        boolean result = categoryService.isBudgetExceededForCategory(user, categoryId);
+
+        assertFalse(result);
     }
 
     @Test
-    void orcamentoNaoExcedeCategoria() {
-        transaction.setAmount(new BigDecimal("1500"));
-        category.setTransactions(List.of(transaction));
-        when(categoryRepository.findById(1L)).thenReturn(Optional.of(category));
+    void isBudgetExceededForCategory_ValidCategoryExceeded_ReturnsTrue() {
+        User user = new User();
+        Long categoryId = 1L;
+        Category category = new Category();
+        category.setUser(user);
+        category.setBudget(new BigDecimal("1000"));
 
-        boolean isExceeded = categoryService.isBudgetExceededForCategory(user, 1L);
+        List<Transaction> transactions = new ArrayList<>();
+        Transaction t1 = new Transaction();
+        t1.setType(TransactionType.DESPESA);
+        t1.setAmount(new BigDecimal("1500"));
+        transactions.add(t1);
+        category.setTransactions(transactions);
 
-        assertTrue(isExceeded); // Total expenses (1500) > Budget (1000)
+        when(categoryRepository.findById(categoryId)).thenReturn(Optional.of(category));
+
+        boolean result = categoryService.isBudgetExceededForCategory(user, categoryId);
+
+        assertTrue(result);
     }
 
     @Test
-    void getOrcamentoRestanteParaCategoria() {
-        when(categoryRepository.findById(1L)).thenReturn(Optional.of(category));
+    void isBudgetExceededForCategory_CategoryNotFound_ReturnsFalse() {
+        User user = new User();
+        Long categoryId = 1L;
+        when(categoryRepository.findById(categoryId)).thenReturn(Optional.empty());
 
-        BigDecimal remainingBudget = categoryService.getRemainingBudgetForCategory(user, 1L);
+        boolean result = categoryService.isBudgetExceededForCategory(user, categoryId);
 
-        assertEquals(new BigDecimal("500"), remainingBudget); // Budget (1000) - Expenses (500)
+        assertFalse(result);
     }
 
     @Test
-    void getOrcamentoRestanteParaCategoria_CategoriaNotFound() {
-        when(categoryRepository.findById(1L)).thenReturn(Optional.empty());
+    void isBudgetExceededForCategory_DifferentUser_ReturnsFalse() {
+        User user1 = new User();
+        User user2 = new User();
+        Long categoryId = 1L;
+        Category category = new Category();
+        category.setUser(user2);
+        category.setBudget(new BigDecimal("1000"));
 
-        BigDecimal remainingBudget = categoryService.getRemainingBudgetForCategory(user, 1L);
+        when(categoryRepository.findById(categoryId)).thenReturn(Optional.of(category));
 
-        assertEquals(BigDecimal.ZERO, remainingBudget);
+        boolean result = categoryService.isBudgetExceededForCategory(user1, categoryId);
+
+        assertFalse(result);
+    }
+
+    @Test
+    void getRemainingBudgetForCategory_ValidCategory_ReturnsCorrectAmount() {
+        User user = new User();
+        Long categoryId = 1L;
+        Category category = new Category();
+        category.setUser(user);
+        category.setBudget(new BigDecimal("1000"));
+
+        List<Transaction> transactions = new ArrayList<>();
+        Transaction t1 = new Transaction();
+        t1.setType(TransactionType.DESPESA);
+        t1.setAmount(new BigDecimal("600"));
+        transactions.add(t1);
+        category.setTransactions(transactions);
+
+        when(categoryRepository.findById(categoryId)).thenReturn(Optional.of(category));
+
+        BigDecimal result = categoryService.getRemainingBudgetForCategory(user, categoryId);
+
+        assertEquals(new BigDecimal("400"), result);
+    }
+
+    @Test
+    void getRemainingBudgetForCategory_CategoryNotFound_ReturnsZero() {
+        User user = new User();
+        Long categoryId = 1L;
+        when(categoryRepository.findById(categoryId)).thenReturn(Optional.empty());
+
+        BigDecimal result = categoryService.getRemainingBudgetForCategory(user, categoryId);
+
+        assertEquals(BigDecimal.ZERO, result);
+    }
+
+    @Test
+    void findById_ExistingCategory_ReturnsCategory() {
+        Long categoryId = 1L;
+        Category category = new Category();
+        when(categoryRepository.findById(categoryId)).thenReturn(Optional.of(category));
+
+        Category result = categoryService.findById(categoryId);
+
+        assertEquals(category, result);
+    }
+
+    @Test
+    void findById_NonExistingCategory_ThrowsException() {
+        Long categoryId = 1L;
+        when(categoryRepository.findById(categoryId)).thenReturn(Optional.empty());
+
+        assertThrows(IllegalArgumentException.class, () -> categoryService.findById(categoryId));
+    }
+
+    @Test
+    void updateCategory_ExistingCategory_UpdatesCategory() {
+        Category category = new Category();
+        category.setId(1L);
+        when(categoryRepository.existsById(1L)).thenReturn(true);
+
+        categoryService.updateCategory(category);
+
+        verify(categoryRepository, times(1)).save(category);
+    }
+
+    @Test
+    void updateCategory_NonExistingCategory_ThrowsException() {
+        Category category = new Category();
+        category.setId(1L);
+        when(categoryRepository.existsById(1L)).thenReturn(false);
+
+        assertThrows(IllegalArgumentException.class, () -> categoryService.updateCategory(category));
+        verify(categoryRepository, never()).save(any());
+    }
+
+    @Test
+    void findByNameAndUser_ExistingCategory_ReturnsCategory() {
+        String categoryName = "Test";
+        User user = new User();
+        Category category = new Category();
+        when(categoryRepository.findByNameAndUser(categoryName, user)).thenReturn(Optional.of(category));
+
+        Category result = categoryService.findByNameAndUser(categoryName, user);
+
+        assertEquals(category, result);
+    }
+
+    @Test
+    void findByNameAndUser_NonExistingCategory_ThrowsException() {
+        String categoryName = "Test";
+        User user = new User();
+        user.setUsername("testUser");
+        when(categoryRepository.findByNameAndUser(categoryName, user)).thenReturn(Optional.empty());
+
+        assertThrows(IllegalArgumentException.class, () -> categoryService.findByNameAndUser(categoryName, user));
     }
 }
-

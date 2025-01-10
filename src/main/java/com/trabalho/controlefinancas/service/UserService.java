@@ -1,25 +1,28 @@
 package com.trabalho.controlefinancas.service;
 
-import com.trabalho.controlefinancas.model.User;
-import com.trabalho.controlefinancas.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import java.util.Optional;
+
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
 
-
-import java.util.Optional;
+import com.trabalho.controlefinancas.model.User;
+import com.trabalho.controlefinancas.repository.UserRepository;
+import com.trabalho.controlefinancas.model.UserRole;
 
 @Service
 public class UserService implements UserDetailsService{
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    // Construtor para injeção de dependência
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
+    }
 
     public void registerUser(String username, String password) {
         User user = new User(username,password);
@@ -32,10 +35,8 @@ public class UserService implements UserDetailsService{
 
 
     public User findUserByUsername(String username) {
-        if (userRepository.findByUsername(username).isEmpty()) {
-            throw new RuntimeException("Username doesn't exists");
-        }
-        return userRepository.findByUsername(username).get();
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Username doesn't exist"));
     }
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {

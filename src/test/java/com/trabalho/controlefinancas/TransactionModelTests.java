@@ -1,14 +1,17 @@
 package com.trabalho.controlefinancas;
 
-import org.junit.jupiter.api.Test;
-import com.trabalho.controlefinancas.model.Category;
-import com.trabalho.controlefinancas.model.Transaction;
-import com.trabalho.controlefinancas.model.User;
-import com.trabalho.controlefinancas.model.TransactionType;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.Test;
+
+import com.trabalho.controlefinancas.model.Category;
+import com.trabalho.controlefinancas.model.Transaction;
+import com.trabalho.controlefinancas.model.TransactionType;
+import com.trabalho.controlefinancas.model.User;
 
 class TransactionModelTests {
 
@@ -58,6 +61,32 @@ class TransactionModelTests {
 
         transaction.setRecurring(false);
         assertFalse(transaction.isRecurring());
+    }
+
+    @Test
+    void isRecurringString_WhenTransactionIsRecurring_ReturnsSim() {
+        // Arrange
+        Transaction transaction = new Transaction();
+        transaction.setRecurring(true);
+
+        // Act
+        String result = transaction.isRecurringString();
+
+        // Assert
+        assertEquals("Sim", result, "Expected 'Sim' when transaction is recurring");
+    }
+
+    @Test
+    void isRecurringString_WhenTransactionIsNotRecurring_ReturnsNao() {
+        // Arrange
+        Transaction transaction = new Transaction();
+        transaction.setRecurring(false);
+
+        // Act
+        String result = transaction.isRecurringString();
+
+        // Assert
+        assertEquals("Não", result, "Expected 'Não' when transaction is not recurring");
     }
 }
 

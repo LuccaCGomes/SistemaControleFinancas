@@ -1,11 +1,11 @@
-package com.trabalho.controlefinancas;
+package com.trabalho.controlefinancas.service;
 
 import com.trabalho.controlefinancas.model.Category;
 import com.trabalho.controlefinancas.model.Transaction;
 import com.trabalho.controlefinancas.model.TransactionType;
 import com.trabalho.controlefinancas.model.User;
 import com.trabalho.controlefinancas.repository.TransactionRepository;
-import com.trabalho.controlefinancas.service.TransactionService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -15,13 +15,13 @@ import org.springframework.security.access.AccessDeniedException;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
-
 
 @ExtendWith(MockitoExtension.class)
 class TransactionServiceTest {
@@ -32,136 +32,237 @@ class TransactionServiceTest {
     @InjectMocks
     private TransactionService transactionService;
 
+    private User user;
+    private Category category;
+    private Transaction transaction;
+    private LocalDate currentDate;
+
+    @BeforeEach
+    void setUp() {
+        user = new User();
+        user.setId(1L);
+
+        category = new Category();
+        category.setId(1L);
+        category.setName("Test Category");
+        category.setBudget(new BigDecimal("1000.00"));
+
+        currentDate = LocalDate.of(2024, 1, 15);
+
+        transaction = new Transaction();
+        transaction.setId(1L);
+        transaction.setUser(user);
+        transaction.setCategory(category);
+        transaction.setAmount(new BigDecimal("500.00"));
+        transaction.setDate(currentDate);
+        transaction.setType(TransactionType.DESPESA);
+    }
+
     @Test
-    void getTransacoesUser() {
-        User user = new User();
-        Transaction transaction1 = new Transaction();
-        Transaction transaction2 = new Transaction();
-        List<Transaction> transactions = List.of(transaction1, transaction2);
+    void getUserTransactions_ShouldReturnUserTransactions() {
+        // Arrange
+        List<Transaction> expectedTransactions = Arrays.asList(transaction);
+        when(transactionRepository.findByUser(user)).thenReturn(expectedTransactions);
 
-        when(transactionRepository.findByUser(user)).thenReturn(transactions);
-
+        // Act
         List<Transaction> result = transactionService.getUserTransactions(user);
 
-        assertEquals(2, result.size());
-        verify(transactionRepository, times(1)).findByUser(user);
+        // Assert
+        assertEquals(expectedTransactions, result);
+        verify(transactionRepository).findByUser(user);
     }
 
     @Test
-    void addTransacaoDentroOrcamento() {
-        User user = new User();
-        Category category = new Category();
-        category.setBudget(new BigDecimal("500"));
-        category.setName("Food");
+    void addTransaction_WithRevenue_ShouldSaveWithoutBudgetCheck() {
+        // Arrange
+        transaction.setType(TransactionType.RECEITA);
 
-        Transaction transaction = new Transaction();
-        transaction.setUser(user);
-        transaction.setCategory(category);
-        transaction.setAmount(new BigDecimal("200"));
-        transaction.setType(TransactionType.DESPESA);
-        transaction.setDate(LocalDate.of(2024, 11, 20));
-
-        when(transactionRepository.findByCategoryAndUser(category, user)).thenReturn(List.of(transaction));
-
+        // Act
         String result = transactionService.addTransaction(transaction);
 
+        // Assert
         assertNull(result);
-        verify(transactionRepository, times(1)).save(transaction);
+        verify(transactionRepository).save(transaction);
+        verify(transactionRepository, never()).findByCategoryAndUser(any(), any());
     }
 
     @Test
-    void addTransacaoUltrapassaOrcamento() {
-        User user = new User();
-        Category category = new Category();
-        category.setBudget(new BigDecimal("300"));
-        category.setName("Transport");
+    void addTransaction_WithNullBudget_ShouldSaveWithoutBudgetCheck() {
+        // Arrange
+        category.setBudget(null);
 
-        Transaction transaction = new Transaction();
-        transaction.setUser(user);
-        transaction.setCategory(category);
-        transaction.setAmount(new BigDecimal("200"));
-        transaction.setType(TransactionType.DESPESA);
-        transaction.setDate(LocalDate.of(2024, 11, 20));
-
-        Transaction pastTransaction = new Transaction();
-        pastTransaction.setAmount(new BigDecimal("150"));
-        pastTransaction.setType(TransactionType.DESPESA);
-        pastTransaction.setDate(LocalDate.of(2024, 11, 10));
-
-        when(transactionRepository.findByCategoryAndUser(category, user)).thenReturn(List.of(pastTransaction));
-
+        // Act
         String result = transactionService.addTransaction(transaction);
 
-        assertEquals("O valor das transações para a categoria Transport excedeu o orçamento mensal.", result);
-        verify(transactionRepository, times(1)).save(transaction);
+        // Assert
+        assertNull(result);
+        verify(transactionRepository).save(transaction);
+        verify(transactionRepository, never()).findByCategoryAndUser(any(), any());
     }
 
     @Test
-    void deletaTransacaoPorIdUserAutorizado() {
-        User user = new User();
-        user.setId(1L);
+    void addTransaction_WithinBudget_ShouldSaveSuccessfully() {
+        // Arrange
+        List<Transaction> existingTransactions = Arrays.asList(
+                createTransaction(new BigDecimal("300.00"))
+        );
+        when(transactionRepository.findByCategoryAndUser(category, user))
+                .thenReturn(existingTransactions);
 
-        Transaction transaction = new Transaction();
-        transaction.setId(1L);
-        transaction.setUser(user);
+        // Act
+        String result = transactionService.addTransaction(transaction);
 
+        // Assert
+        assertNull(result);
+        verify(transactionRepository).save(transaction);
+    }
+
+    @Test
+    void addTransaction_ExceedingBudget_ShouldSaveWithWarning() {
+        // Arrange
+        List<Transaction> existingTransactions = Arrays.asList(
+                createTransaction(new BigDecimal("700.00"))
+        );
+        when(transactionRepository.findByCategoryAndUser(category, user))
+                .thenReturn(existingTransactions);
+
+        // Act
+        String result = transactionService.addTransaction(transaction);
+
+        // Assert
+        assertEquals("O valor das transações para a categoria Test Category excedeu o orçamento mensal.", result);
+        verify(transactionRepository).save(transaction);
+    }
+
+    @Test
+    void deleteTransactionByIdAndUser_WithAuthorizedUser_ShouldDelete() {
+        // Arrange
         when(transactionRepository.findById(1L)).thenReturn(Optional.of(transaction));
 
+        // Act
         transactionService.deleteTransactionByIdAndUser(1L, user);
 
-        verify(transactionRepository, times(1)).delete(transaction);
+        // Assert
+        verify(transactionRepository).delete(transaction);
     }
 
     @Test
-    void deletaTransacaoPorIdUserDesautorizado() {
-        User user = new User();
-        user.setId(1L);
-
-        User otherUser = new User();
-        otherUser.setId(2L);
-
-        Transaction transaction = new Transaction();
-        transaction.setId(1L);
-        transaction.setUser(otherUser);
-
+    void deleteTransactionByIdAndUser_WithUnauthorizedUser_ShouldThrowException() {
+        // Arrange
+        User unauthorizedUser = new User();
+        unauthorizedUser.setId(2L);
         when(transactionRepository.findById(1L)).thenReturn(Optional.of(transaction));
 
-        assertThrows(AccessDeniedException.class, () -> transactionService.deleteTransactionByIdAndUser(1L, user));
-
-        verify(transactionRepository, never()).delete(transaction);
+        // Act & Assert
+        assertThrows(AccessDeniedException.class,
+                () -> transactionService.deleteTransactionByIdAndUser(1L, unauthorizedUser));
+        verify(transactionRepository, never()).delete(any());
     }
-
 
     @Test
-    void getFinancasMensal() {
-        User user = new User();
-        user.setId(1L);
+    void deleteTransactionByIdAndUser_WithNonexistentTransaction_ShouldThrowException() {
+        // Arrange
+        when(transactionRepository.findById(1L)).thenReturn(Optional.empty());
 
-        Transaction t1 = new Transaction();
-        t1.setUser(user);
-        t1.setType(TransactionType.RECEITA);
-        t1.setDate(LocalDate.of(2023, 10, 1));
-        t1.setAmount(new BigDecimal("100"));
-
-        Transaction t2 = new Transaction();
-        t2.setUser(user);
-        t2.setType(TransactionType.RECEITA);
-        t2.setDate(LocalDate.of(2023, 11, 1));
-        t2.setAmount(new BigDecimal("200"));
-
-        Transaction t3 = new Transaction();
-        t3.setUser(user);
-        t3.setType(TransactionType.DESPESA);
-        t3.setDate(LocalDate.of(2023, 11, 2));
-        t3.setAmount(new BigDecimal("300"));
-
-        when(transactionRepository.findByUser(user)).thenReturn(List.of(t1, t2, t3));
-        Map<String, BigDecimal> summary = transactionService.getMonthlyFinancialSummary(user, 11, 2023);
-
-        assertEquals(new BigDecimal("100"), summary.get("initialBalance")); 
-        assertEquals(new BigDecimal("200"), summary.get("totalIncome"));    
-        assertEquals(new BigDecimal("300"), summary.get("totalExpense"));   
-        assertEquals(new BigDecimal("0"), summary.get("finalBalance"));     
+        // Act & Assert
+        assertThrows(RuntimeException.class,
+                () -> transactionService.deleteTransactionByIdAndUser(1L, user));
+        verify(transactionRepository, never()).delete(any());
     }
 
+    @Test
+    void getMonthlyFinancialSummary_ShouldCalculateCorrectly() {
+        // Arrange
+        List<Transaction> transactions = Arrays.asList(
+                createTransaction(new BigDecimal("1000.00"), TransactionType.RECEITA, LocalDate.of(2023, 12, 1)),
+                createTransaction(new BigDecimal("500.00"), TransactionType.DESPESA, LocalDate.of(2024, 1, 1)),
+                createTransaction(new BigDecimal("800.00"), TransactionType.RECEITA, LocalDate.of(2024, 1, 15)),
+                createTransaction(new BigDecimal("300.00"), TransactionType.DESPESA, LocalDate.of(2024, 1, 20))
+        );
+        when(transactionRepository.findByUser(user)).thenReturn(transactions);
+
+        // Act
+        Map<String, BigDecimal> result = transactionService.getMonthlyFinancialSummary(user, 1, 2024);
+
+        // Assert
+        assertEquals(new BigDecimal("1000.00"), result.get("initialBalance"));
+        assertEquals(new BigDecimal("800.00"), result.get("totalIncome"));
+        assertEquals(new BigDecimal("800.00"), result.get("totalExpense"));
+        assertEquals(new BigDecimal("1000.00"), result.get("finalBalance"));
+    }
+
+    @Test
+    void findById_WithExistingTransaction_ShouldReturnTransaction() {
+        // Arrange
+        when(transactionRepository.findById(1L)).thenReturn(Optional.of(transaction));
+
+        // Act
+        Transaction result = transactionService.findById(1L);
+
+        // Assert
+        assertEquals(transaction, result);
+    }
+
+    @Test
+    void findById_WithNonexistentTransaction_ShouldThrowException() {
+        // Arrange
+        when(transactionRepository.findById(1L)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                () -> transactionService.findById(1L));
+        assertEquals("Transação não encontrada com o ID: 1", exception.getMessage());
+    }
+
+    @Test
+    void updateTransaction_WithExistingTransaction_ShouldUpdate() {
+        // Arrange
+        when(transactionRepository.existsById(1L)).thenReturn(true);
+
+        // Act
+        transactionService.updateTransaction(transaction);
+
+        // Assert
+        verify(transactionRepository).save(transaction);
+    }
+
+    @Test
+    void updateTransaction_WithNonexistentTransaction_ShouldThrowException() {
+        // Arrange
+        when(transactionRepository.existsById(1L)).thenReturn(false);
+
+        // Act & Assert
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                () -> transactionService.updateTransaction(transaction));
+        assertEquals("Transação não encontrada com o ID: 1", exception.getMessage());
+    }
+
+    @Test
+    void findByMonth_ShouldReturnTransactionsForMonth() {
+        // Arrange
+        List<Transaction> expectedTransactions = Arrays.asList(transaction);
+        when(transactionRepository.findTransactionsByMonthAndUser(2024, 1, user))
+                .thenReturn(expectedTransactions);
+
+        // Act
+        List<Transaction> result = transactionService.findByMonth(2024, 1, user);
+
+        // Assert
+        assertEquals(expectedTransactions, result);
+        verify(transactionRepository).findTransactionsByMonthAndUser(2024, 1, user);
+    }
+
+    private Transaction createTransaction(BigDecimal amount) {
+        return createTransaction(amount, TransactionType.DESPESA, currentDate);
+    }
+
+    private Transaction createTransaction(BigDecimal amount, TransactionType type, LocalDate date) {
+        Transaction t = new Transaction();
+        t.setUser(user);
+        t.setCategory(category);
+        t.setAmount(amount);
+        t.setType(type);
+        t.setDate(date);
+        return t;
+    }
 }
