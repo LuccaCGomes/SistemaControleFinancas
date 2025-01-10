@@ -95,5 +95,29 @@ class CategoryControllerTest {
         verify(redirectAttributes, times(1)).addFlashAttribute("error", "Error adding category. The name might already exist.");
     }
 
+    @Test
+    void deleteCategory_ValidId_DeletesCategoryAndRedirects() {
+        String result = categoryController.deleteCategory(1L, null);
 
+        assertEquals("redirect:/categories", result);
+        verify(categoryService, times(1)).deleteCategoryById(1L);
+    }
+
+    @Test
+    void editCategory_ValidCategory_UpdatesCategoryAndRedirects() {
+        Category category = new Category("Food", "Old Description", BigDecimal.TEN);
+        category.setId(1L);
+
+        when(categoryService.findById(1L)).thenReturn(category);
+
+        String result = categoryController.editCategory(1L, "Updated Food", BigDecimal.valueOf(20), "Updated Description", redirectAttributes);
+
+        assertEquals("redirect:/categories", result);
+        assertEquals("Updated Food", category.getName());
+        assertEquals(BigDecimal.valueOf(20), category.getBudget());
+        assertEquals("Updated Description", category.getDescription());
+
+        verify(categoryService, times(1)).updateCategory(category);
+        verify(redirectAttributes, times(1)).addFlashAttribute("message", "Categoria editada com sucesso!");
+    }
 }
