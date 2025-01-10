@@ -44,10 +44,17 @@ public class ResumeController {
 
         List<FinancialGoal> goals = financialGoalService.getUserGoals(user);
 
+        // Calcular rendimento potencial
+        BigDecimal rendimentoPotencial = BigDecimal.ZERO;
+        if (finalBalance != null && finalBalance.compareTo(BigDecimal.ZERO) > 0) {
+            rendimentoPotencial = finalBalance.multiply(BigDecimal.valueOf(0.09435)); // 1% do saldo final
+        }
+
         model.addAttribute("initialBalance", summary.get("initialBalance"));
         model.addAttribute("totalIncome", summary.get("totalIncome"));
         model.addAttribute("totalExpense", summary.get("totalExpense"));
         model.addAttribute("finalBalance", finalBalance);
+        model.addAttribute("rendimentoPotencial", rendimentoPotencial);
         model.addAttribute("goals", goals);
         model.addAttribute("user", user);
 
