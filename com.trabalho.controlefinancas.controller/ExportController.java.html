@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ExportController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Archetype - com.trabalho.controlefinancas</a> &gt; <a href="index.source.html" class="el_package">com.trabalho.controlefinancas.controller</a> &gt; <span class="el_source">ExportController.java</span></div><h1>ExportController.java</h1><pre class="source lang-java linenums">package com.trabalho.controlefinancas.controller;
+
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+
+import com.trabalho.controlefinancas.model.Category;
+import com.trabalho.controlefinancas.model.Transaction;
+import com.trabalho.controlefinancas.model.User;
+import com.trabalho.controlefinancas.repository.CategoryRepository;
+import com.trabalho.controlefinancas.service.ChartService;
+import com.trabalho.controlefinancas.service.CsvService;
+import com.trabalho.controlefinancas.service.PdfExportService;
+import com.trabalho.controlefinancas.service.ThymeleafTemplateService;
+import com.trabalho.controlefinancas.service.TransactionService;
+
+@Controller
+public class ExportController {
+
+    private final PdfExportService pdfExportService;
+    private final ChartService chartService;
+    private final ThymeleafTemplateService templateService;
+    private final CategoryRepository categoryRepository;
+    private final TransactionService transactionService;
+    private final CsvService csvService;
+
+    // Constructor injection
+    public ExportController(PdfExportService pdfExportService,
+                            ChartService chartService,
+                            ThymeleafTemplateService templateService,
+                            CategoryRepository categoryRepository,
+                            TransactionService transactionService,
+<span class="fc" id="L44">                            CsvService csvService) {</span>
+<span class="fc" id="L45">        this.pdfExportService = pdfExportService;</span>
+<span class="fc" id="L46">        this.chartService = chartService;</span>
+<span class="fc" id="L47">        this.templateService = templateService;</span>
+<span class="fc" id="L48">        this.categoryRepository = categoryRepository;</span>
+<span class="fc" id="L49">        this.transactionService = transactionService;</span>
+<span class="fc" id="L50">        this.csvService = csvService;</span>
+<span class="fc" id="L51">    }</span>
+
+    @GetMapping(&quot;/export-pdf&quot;)
+    public ResponseEntity&lt;byte[]&gt; exportPageToPdf(Model model, @AuthenticationPrincipal User user) throws IOException {
+<span class="fc" id="L55">        LocalDate currentDate = LocalDate.now();</span>
+<span class="fc" id="L56">        int month = currentDate.getMonthValue();</span>
+<span class="fc" id="L57">        int year = currentDate.getYear();</span>
+
+<span class="fc" id="L59">        List&lt;Transaction&gt; transactions = transactionService.findByMonth(year, month, user);</span>
+
+<span class="fc" id="L61">        Map&lt;String, BigDecimal&gt; summary = transactionService.getMonthlyFinancialSummary(user, month, year);</span>
+
+<span class="fc" id="L63">        BigDecimal totalValue = transactions.stream()</span>
+<span class="fc" id="L64">                .map(Transaction::getAmount) // Assuming `getAmount()` returns BigDecimal</span>
+<span class="fc" id="L65">                .reduce(BigDecimal.ZERO, BigDecimal::add);</span>
+<span class="fc" id="L66">        List&lt;Category&gt; categories = categoryRepository.findByUser(user);</span>
+
+<span class="fc" id="L68">        Map&lt;String, Object&gt; variables = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L69">        variables.put(&quot;transactions&quot;, transactions);</span>
+<span class="fc" id="L70">        variables.put(&quot;categories&quot;, categories);</span>
+<span class="fc" id="L71">        variables.put(&quot;initialBalance&quot;, summary.get(&quot;initialBalance&quot;));</span>
+<span class="fc" id="L72">        variables.put(&quot;totalIncome&quot;, summary.get(&quot;totalIncome&quot;));</span>
+<span class="fc" id="L73">        variables.put(&quot;totalExpense&quot;, summary.get(&quot;totalExpense&quot;));</span>
+<span class="fc" id="L74">        variables.put(&quot;finalBalance&quot;, summary.get(&quot;finalBalance&quot;));</span>
+
+<span class="fc" id="L76">        String htmlContent = templateService.renderTemplate(&quot;report&quot;, variables);</span>
+<span class="fc" id="L77">        String pieChart = chartService.createExpensePieChartBase64(user);</span>
+<span class="fc" id="L78">        String cashFlowChart = chartService.createCashFlowChartBase64(user);</span>
+<span class="fc" id="L79">        htmlContent = pdfExportService.prepareHtmlWithChart(htmlContent, pieChart, cashFlowChart);</span>
+
+<span class="fc" id="L81">        byte[] pdfBytes = pdfExportService.generatePdf(htmlContent);</span>
+
+<span class="fc" id="L83">        return ResponseEntity.ok()</span>
+<span class="fc" id="L84">                .header(&quot;Content-Disposition&quot;, &quot;attachment; filename=relatorio.pdf&quot;)</span>
+<span class="fc" id="L85">                .contentType(org.springframework.http.MediaType.APPLICATION_PDF)</span>
+<span class="fc" id="L86">                .body(pdfBytes);</span>
+    }
+
+    @GetMapping(&quot;/export-csv&quot;)
+    public ResponseEntity&lt;byte[]&gt; exportDataToCsv(Model model, @AuthenticationPrincipal User user) {
+
+<span class="nc" id="L92">        List&lt;Transaction&gt; transactions = transactionService.getUserTransactions(user);</span>
+
+<span class="nc" id="L94">        List&lt;String[]&gt; data = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L95">        data.add(new String[]{&quot;ID&quot;, &quot;Tipo&quot;, &quot;Descrição&quot;, &quot;Valor&quot;, &quot;Data&quot;, &quot;Categoria&quot;, &quot;É Recorrente?&quot;});</span>
+
+        // Converter cada transação em uma linha CSV
+<span class="nc bnc" id="L98" title="All 2 branches missed.">        for (Transaction transaction : transactions) {</span>
+<span class="nc" id="L99">            data.add(new String[]{</span>
+<span class="nc" id="L100">                transaction.getId().toString(),</span>
+<span class="nc" id="L101">                transaction.getType().toString(),</span>
+<span class="nc" id="L102">                transaction.getDescription(),</span>
+<span class="nc" id="L103">                String.valueOf(transaction.getAmount()),</span>
+<span class="nc" id="L104">                transaction.getDate().toString(),</span>
+<span class="nc" id="L105">                transaction.getCategory().getName(),</span>
+<span class="nc" id="L106">                transaction.isRecurringString()</span>
+            });
+<span class="nc" id="L108">        }</span>
+<span class="nc" id="L109">        byte[] csvBytes = csvService.generateCsv(data);</span>
+
+<span class="nc" id="L111">        return ResponseEntity.ok()</span>
+<span class="nc" id="L112">                .header(&quot;Content-Disposition&quot;, &quot;attachment; filename=transacoes.csv&quot;)</span>
+<span class="nc" id="L113">                .contentType(org.springframework.http.MediaType.TEXT_PLAIN)</span>
+<span class="nc" id="L114">                .body(csvBytes);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

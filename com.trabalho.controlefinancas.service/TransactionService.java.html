@@ -1,121 +1,151 @@
 <?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TransactionService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Archetype - com.trabalho.controlefinancas</a> &gt; <a href="index.source.html" class="el_package">com.trabalho.controlefinancas.service</a> &gt; <span class="el_source">TransactionService.java</span></div><h1>TransactionService.java</h1><pre class="source lang-java linenums">package com.trabalho.controlefinancas.service;
 
-import com.trabalho.controlefinancas.exception.BudgetExceededException;
-import com.trabalho.controlefinancas.model.Category;
-import com.trabalho.controlefinancas.model.Transaction;
-import com.trabalho.controlefinancas.model.TransactionType;
-import com.trabalho.controlefinancas.model.User;
-import com.trabalho.controlefinancas.repository.TransactionRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.access.AccessDeniedException;
-import org.springframework.stereotype.Service;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@Service
-<span class="fc" id="L20">public class TransactionService {</span>
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.stereotype.Service;
 
-    @Autowired
-    private TransactionRepository transactionRepository;
+import com.trabalho.controlefinancas.model.Category;
+import com.trabalho.controlefinancas.model.Transaction;
+import com.trabalho.controlefinancas.model.TransactionType;
+import com.trabalho.controlefinancas.model.User;
+import com.trabalho.controlefinancas.repository.TransactionRepository;
+
+@Service
+public class TransactionService {
+
+    private final TransactionRepository transactionRepository;
+
+    // Construtor para injeção de dependência
+<span class="fc" id="L24">    public TransactionService(TransactionRepository transactionRepository) {</span>
+<span class="fc" id="L25">        this.transactionRepository = transactionRepository;</span>
+<span class="fc" id="L26">    }</span>
 
     public List&lt;Transaction&gt; getUserTransactions(User user) {
-<span class="fc" id="L26">        return transactionRepository.findByUser(user);</span>
+<span class="fc" id="L29">        return transactionRepository.findByUser(user);</span>
     }
 
-//    public Transaction addTransaction(Transaction transaction) {
-//        return transactionRepository.save(transaction);
-//    }
-
     public String addTransaction(Transaction transaction) {
-<span class="fc" id="L34">        Category category = transaction.getCategory();</span>
-<span class="fc" id="L35">        User user = transaction.getUser();</span>
+<span class="fc" id="L33">        Category category = transaction.getCategory();</span>
+<span class="fc" id="L34">        User user = transaction.getUser();</span>
 
         // Obtém o mês e o ano da transação
-<span class="fc" id="L38">        LocalDate transactionDate = transaction.getDate();</span>
-<span class="fc" id="L39">        int month = transactionDate.getMonthValue();</span>
-<span class="fc" id="L40">        int year = transactionDate.getYear();</span>
+<span class="fc" id="L37">        LocalDate transactionDate = transaction.getDate();</span>
+<span class="fc" id="L38">        int month = transactionDate.getMonthValue();</span>
+<span class="fc" id="L39">        int year = transactionDate.getYear();</span>
 
 
         // Salva a transação mesmo se exceder o limite do mês
-<span class="fc" id="L44">        transactionRepository.save(transaction);</span>
+<span class="fc" id="L43">        transactionRepository.save(transaction);</span>
 
-<span class="pc bpc" id="L46" title="2 of 4 branches missed.">        if (transaction.getType() == TransactionType.RECEITA || category.getBudget() == null) return null;</span>
+<span class="fc bfc" id="L45" title="All 4 branches covered.">        if (transaction.getType() == TransactionType.RECEITA || category.getBudget() == null) {</span>
+<span class="fc" id="L46">            return null;</span>
+        }
         // se for Receita ou budget não existir
         // o limite do mês não precisa ser calculado
 
 
-<span class="fc" id="L51">        BigDecimal totalTransactionsAmount = transactionRepository</span>
-<span class="fc" id="L52">                .findByCategoryAndUser(category, user)</span>
-<span class="fc" id="L53">                .stream()</span>
-<span class="pc bpc" id="L54" title="1 of 2 branches missed.">                .filter(t -&gt; t.getDate().getMonthValue() == month</span>
-<span class="pc bpc" id="L55" title="1 of 2 branches missed.">                        &amp;&amp; t.getDate().getYear() == year</span>
-<span class="pc bpc" id="L56" title="1 of 2 branches missed.">                        &amp;&amp; t.getType() == TransactionType.DESPESA</span>
+<span class="fc" id="L52">        BigDecimal totalTransactionsAmount = transactionRepository</span>
+<span class="fc" id="L53">                .findByCategoryAndUser(category, user)</span>
+<span class="fc" id="L54">                .stream()</span>
+<span class="pc bpc" id="L55" title="1 of 2 branches missed.">                .filter(t -&gt; t.getDate().getMonthValue() == month</span>
+<span class="pc bpc" id="L56" title="1 of 2 branches missed.">                        &amp;&amp; t.getDate().getYear() == year</span>
+<span class="pc bpc" id="L57" title="1 of 2 branches missed.">                        &amp;&amp; t.getType() == TransactionType.DESPESA</span>
                 ) // Verifica o mesmo mês, ano e se é uma Despesa
-<span class="fc" id="L58">                .map(Transaction::getAmount)</span>
-<span class="fc" id="L59">                .reduce(BigDecimal.ZERO, BigDecimal::add);</span>
+<span class="fc" id="L59">                .map(Transaction::getAmount)</span>
+<span class="fc" id="L60">                .reduce(BigDecimal.ZERO, BigDecimal::add);</span>
 
-<span class="fc" id="L61">        BigDecimal newTotal = totalTransactionsAmount.add(transaction.getAmount());</span>
+<span class="fc" id="L62">        BigDecimal newTotal = totalTransactionsAmount.add(transaction.getAmount());</span>
 
 
 
-<span class="fc bfc" id="L65" title="All 2 branches covered.">        if (newTotal.compareTo(category.getBudget()) &gt; 0) {</span>
+<span class="fc bfc" id="L66" title="All 2 branches covered.">        if (newTotal.compareTo(category.getBudget()) &gt; 0) {</span>
 
-<span class="fc" id="L67">            return &quot;O valor das transações para a categoria &quot; + category.getName() + &quot; excedeu o orçamento mensal.&quot;;</span>
+<span class="fc" id="L68">            return &quot;O valor das transações para a categoria &quot; + category.getName() + &quot; excedeu o orçamento mensal.&quot;;</span>
         }
 
-<span class="fc" id="L70">        return null;</span>
+<span class="fc" id="L71">        return null;</span>
     }
 
 
     public void deleteTransactionByIdAndUser(Long id, User user) {
-<span class="fc" id="L75">        Transaction transaction = transactionRepository.findById(id)</span>
-<span class="pc" id="L76">                .orElseThrow(() -&gt; new RuntimeException(&quot;Transaction not found&quot;));</span>
+<span class="fc" id="L76">        Transaction transaction = transactionRepository.findById(id)</span>
+<span class="fc" id="L77">                .orElseThrow(() -&gt; new RuntimeException(&quot;Transaction not found&quot;));</span>
 
-<span class="fc" id="L78">        if (!transaction.getUser()</span>
-<span class="fc" id="L79">                .getId()</span>
-<span class="fc bfc" id="L80" title="All 2 branches covered.">                .equals(user.getId())) {</span>
-<span class="fc" id="L81">            throw new AccessDeniedException(&quot;Not authorized to delete this transaction&quot;);</span>
+<span class="fc" id="L79">        if (!transaction.getUser()</span>
+<span class="fc" id="L80">                .getId()</span>
+<span class="fc bfc" id="L81" title="All 2 branches covered.">                .equals(user.getId())) {</span>
+<span class="fc" id="L82">            throw new AccessDeniedException(&quot;Not authorized to delete this transaction&quot;);</span>
         }
 
-<span class="fc" id="L84">        transactionRepository.delete(transaction);</span>
-<span class="fc" id="L85">    }</span>
+<span class="fc" id="L85">        transactionRepository.delete(transaction);</span>
+<span class="fc" id="L86">    }</span>
 
     public Map&lt;String, BigDecimal&gt; getMonthlyFinancialSummary(User user, int month, int year) {
-<span class="fc" id="L88">        List&lt;Transaction&gt; transactions = transactionRepository.findByUser(user);</span>
+<span class="fc" id="L89">        List&lt;Transaction&gt; transactions = transactionRepository.findByUser(user);</span>
 
         // Calcular o saldo inicial (todas as receitas - despesas até o último dia do mês anterior)
-<span class="fc" id="L91">        BigDecimal initialBalance = transactions.stream()</span>
-<span class="fc" id="L92">                .filter(t -&gt; t.getDate().isBefore(LocalDate.of(year, month, 1)))</span>
-<span class="pc bpc" id="L93" title="1 of 2 branches missed.">                .map(t -&gt; t.getType() == TransactionType.RECEITA ? t.getAmount() : t.getAmount().negate())</span>
-<span class="fc" id="L94">                .reduce(BigDecimal.ZERO, BigDecimal::add);</span>
+<span class="fc" id="L92">        BigDecimal initialBalance = transactions.stream()</span>
+<span class="fc" id="L93">                .filter(t -&gt; t.getDate().isBefore(LocalDate.of(year, month, 1)))</span>
+<span class="pc bpc" id="L94" title="1 of 2 branches missed.">                .map(t -&gt; t.getType() == TransactionType.RECEITA ? t.getAmount() : t.getAmount().negate())</span>
+<span class="fc" id="L95">                .reduce(BigDecimal.ZERO, BigDecimal::add);</span>
 
-<span class="fc" id="L96">        BigDecimal totalIncome = transactions.stream()</span>
-<span class="fc bfc" id="L97" title="All 2 branches covered.">                .filter(t -&gt; t.getType() == TransactionType.RECEITA &amp;&amp;</span>
-<span class="fc bfc" id="L98" title="All 2 branches covered.">                        t.getDate().getMonthValue() == month &amp;&amp;</span>
-<span class="pc bpc" id="L99" title="1 of 2 branches missed.">                        t.getDate().getYear() == year)</span>
-<span class="fc" id="L100">                .map(Transaction::getAmount)</span>
-<span class="fc" id="L101">                .reduce(BigDecimal.ZERO, BigDecimal::add);</span>
+<span class="fc" id="L97">        BigDecimal totalIncome = transactions.stream()</span>
+<span class="fc bfc" id="L98" title="All 2 branches covered.">                .filter(t -&gt; t.getType() == TransactionType.RECEITA &amp;&amp;</span>
+<span class="fc bfc" id="L99" title="All 2 branches covered.">                        t.getDate().getMonthValue() == month &amp;&amp;</span>
+<span class="pc bpc" id="L100" title="1 of 2 branches missed.">                        t.getDate().getYear() == year)</span>
+<span class="fc" id="L101">                .map(Transaction::getAmount)</span>
+<span class="fc" id="L102">                .reduce(BigDecimal.ZERO, BigDecimal::add);</span>
 
-<span class="fc" id="L103">        BigDecimal totalExpense = transactions.stream()</span>
-<span class="fc bfc" id="L104" title="All 2 branches covered.">                .filter(t -&gt; t.getType() == TransactionType.DESPESA &amp;&amp;</span>
-<span class="pc bpc" id="L105" title="1 of 2 branches missed.">                        t.getDate().getMonthValue() == month &amp;&amp;</span>
-<span class="pc bpc" id="L106" title="1 of 2 branches missed.">                        t.getDate().getYear() == year)</span>
-<span class="fc" id="L107">                .map(Transaction::getAmount)</span>
-<span class="fc" id="L108">                .reduce(BigDecimal.ZERO, BigDecimal::add);</span>
+<span class="fc" id="L104">        BigDecimal totalExpense = transactions.stream()</span>
+<span class="fc bfc" id="L105" title="All 2 branches covered.">                .filter(t -&gt; t.getType() == TransactionType.DESPESA &amp;&amp;</span>
+<span class="pc bpc" id="L106" title="1 of 2 branches missed.">                        t.getDate().getMonthValue() == month &amp;&amp;</span>
+<span class="pc bpc" id="L107" title="1 of 2 branches missed.">                        t.getDate().getYear() == year)</span>
+<span class="fc" id="L108">                .map(Transaction::getAmount)</span>
+<span class="fc" id="L109">                .reduce(BigDecimal.ZERO, BigDecimal::add);</span>
 
-<span class="fc" id="L110">        BigDecimal finalBalance = initialBalance.add(totalIncome).subtract(totalExpense);</span>
+<span class="fc" id="L111">        BigDecimal finalBalance = initialBalance.add(totalIncome).subtract(totalExpense);</span>
 
-<span class="fc" id="L112">        Map&lt;String, BigDecimal&gt; summary = new HashMap&lt;&gt;();</span>
-<span class="fc" id="L113">        summary.put(&quot;initialBalance&quot;, initialBalance);</span>
-<span class="fc" id="L114">        summary.put(&quot;totalIncome&quot;, totalIncome);</span>
-<span class="fc" id="L115">        summary.put(&quot;totalExpense&quot;, totalExpense);</span>
-<span class="fc" id="L116">        summary.put(&quot;finalBalance&quot;, finalBalance);</span>
+<span class="fc" id="L113">        Map&lt;String, BigDecimal&gt; summary = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L114">        summary.put(&quot;initialBalance&quot;, initialBalance);</span>
+<span class="fc" id="L115">        summary.put(&quot;totalIncome&quot;, totalIncome);</span>
+<span class="fc" id="L116">        summary.put(&quot;totalExpense&quot;, totalExpense);</span>
+<span class="fc" id="L117">        summary.put(&quot;finalBalance&quot;, finalBalance);</span>
 
-<span class="fc" id="L118">        return summary;</span>
+<span class="fc" id="L119">        return summary;</span>
+    }
+
+    /**
+     * Busca uma transação pelo ID.
+     *
+     * @param id O ID da transação.
+     * @return A transação correspondente.
+     * @throws IllegalArgumentException Se a transação não for encontrada.
+     */
+    public Transaction findById(Long id) {
+<span class="fc" id="L130">        return transactionRepository.findById(id)</span>
+<span class="fc" id="L131">                .orElseThrow(() -&gt; new IllegalArgumentException(&quot;Transação não encontrada com o ID: &quot; + id));</span>
+    }
+
+    /**
+     * Atualiza os dados de uma transação existente.
+     *
+     * @param transaction A transação com os novos dados.
+     * @throws IllegalArgumentException Se a transação não for encontrada.
+     */
+    public void updateTransaction(Transaction transaction) {
+<span class="fc bfc" id="L141" title="All 2 branches covered.">        if (!transactionRepository.existsById(transaction.getId())) {</span>
+<span class="fc" id="L142">            throw new IllegalArgumentException(&quot;Transação não encontrada com o ID: &quot; + transaction.getId());</span>
+        }
+<span class="fc" id="L144">        transactionRepository.save(transaction);</span>
+<span class="fc" id="L145">    }</span>
+
+    public List&lt;Transaction&gt; findByMonth(int year, int month, User user){
+<span class="fc" id="L148">        return transactionRepository.findTransactionsByMonthAndUser(year, month, user);</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

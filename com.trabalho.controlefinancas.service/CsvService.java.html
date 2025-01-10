@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CsvService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Archetype - com.trabalho.controlefinancas</a> &gt; <a href="index.source.html" class="el_package">com.trabalho.controlefinancas.service</a> &gt; <span class="el_source">CsvService.java</span></div><h1>CsvService.java</h1><pre class="source lang-java linenums">package com.trabalho.controlefinancas.service;
+import com.trabalho.controlefinancas.model.Category;
+import com.trabalho.controlefinancas.model.Transaction;
+import com.trabalho.controlefinancas.model.TransactionType;
+import com.trabalho.controlefinancas.model.User;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVPrinter;
+import org.apache.commons.csv.CSVRecord;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.ByteArrayOutputStream;
+import java.time.LocalDate;
+import java.io.OutputStreamWriter;
+import java.util.List;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+
+import static java.lang.Long.parseLong;
+
+@Service
+public class CsvService {
+    private final CategoryService categoryService;
+    private final TransactionService transactionService;
+
+    // Injeção de dependência via construtor
+<span class="fc" id="L30">    public CsvService(CategoryService categoryService, TransactionService transactionService) {</span>
+<span class="fc" id="L31">        this.categoryService = categoryService;</span>
+<span class="fc" id="L32">        this.transactionService = transactionService;</span>
+<span class="fc" id="L33">    }</span>
+
+
+    public byte[] generateCsv(List&lt;String[]&gt; data) {
+<span class="fc" id="L37">        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream();</span>
+<span class="fc" id="L38">             OutputStreamWriter writer = new OutputStreamWriter(outputStream);</span>
+<span class="fc" id="L39">             CSVPrinter csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT)) {</span>
+
+<span class="pc bpc" id="L41" title="1 of 2 branches missed.">            for (String[] record : data) {</span>
+<span class="nc" id="L42">                csvPrinter.printRecord(record);</span>
+<span class="nc" id="L43">            }</span>
+
+<span class="fc" id="L45">            csvPrinter.flush();</span>
+<span class="fc" id="L46">            return outputStream.toByteArray();</span>
+<span class="fc" id="L47">        } catch (Exception e) {</span>
+<span class="fc" id="L48">            throw new RuntimeException(&quot;Error generating CSV&quot;, e);</span>
+        }
+    }
+
+    public void processCSV(MultipartFile file, User user) throws Exception {
+
+
+<span class="fc" id="L55">        List&lt;Transaction&gt; transactions = new ArrayList&lt;&gt;();</span>
+
+<span class="fc" id="L57">        try (Reader reader = new BufferedReader(new InputStreamReader(file.getInputStream()))) {</span>
+<span class="fc" id="L58">            Iterable&lt;CSVRecord&gt; records = CSVFormat.DEFAULT</span>
+<span class="fc" id="L59">                    .withHeader(&quot;ID&quot;, &quot;Tipo&quot;, &quot;Descrição&quot;, &quot;Valor&quot;, &quot;Data&quot;, &quot;Categoria&quot;, &quot;É Recorrente?&quot;)</span>
+<span class="fc" id="L60">                    .withFirstRecordAsHeader()</span>
+<span class="fc" id="L61">                    .parse(reader);</span>
+
+<span class="fc bfc" id="L63" title="All 2 branches covered.">            for (CSVRecord record : records) {</span>
+<span class="fc" id="L64">                String id = record.get(&quot;ID&quot;);</span>
+<span class="fc" id="L65">                String type = record.get(&quot;Tipo&quot;);</span>
+<span class="fc" id="L66">                String description = record.get(&quot;Descrição&quot;);</span>
+<span class="fc" id="L67">                String amount = record.get(&quot;Valor&quot;);</span>
+<span class="fc" id="L68">                String date = record.get(&quot;Data&quot;);</span>
+<span class="fc" id="L69">                String categoryName = record.get(&quot;Categoria&quot;);</span>
+<span class="fc" id="L70">                String isRecurring = record.get(&quot;É Recorrente?&quot;);</span>
+
+<span class="fc" id="L72">                LocalDate localDate = null;</span>
+                try {
+<span class="pc bpc" id="L74" title="1 of 4 branches missed.">                    if (date != null &amp;&amp; !date.isEmpty()) {</span>
+<span class="fc" id="L75">                        localDate = LocalDate.parse(date); // Formato esperado: YYYY-MM-DD</span>
+                    }
+<span class="fc" id="L77">                } catch (Exception e) {</span>
+<span class="fc" id="L78">                    throw new IllegalArgumentException(&quot;Formato de data inválido na linha: &quot; + record.getRecordNumber());</span>
+<span class="fc" id="L79">                }</span>
+                // Construa a entidade
+<span class="fc" id="L81">                Transaction transaction = new Transaction();</span>
+
+<span class="fc" id="L83">                Category category = categoryService.findByNameAndUser(categoryName, user);</span>
+
+<span class="pc bpc" id="L85" title="1 of 2 branches missed.">                transaction.setType(type.equals(&quot;RECEITA&quot;) ? TransactionType.RECEITA: TransactionType.DESPESA);</span>
+<span class="fc bfc" id="L86" title="All 2 branches covered.">                transaction.setAmount(amount.isEmpty() ? null : new BigDecimal(amount));</span>
+<span class="fc" id="L87">                transaction.setDescription(description);</span>
+<span class="fc" id="L88">                transaction.setDate(localDate);</span>
+<span class="fc" id="L89">                transaction.setCategory(category);</span>
+<span class="fc" id="L90">                transaction.setRecurring(isRecurring.equals(&quot;Sim&quot;));</span>
+<span class="fc" id="L91">                transaction.setUser(user);</span>
+
+<span class="fc" id="L93">                transactions.add(transaction);</span>
+<span class="fc" id="L94">            }</span>
+        }
+
+<span class="fc bfc" id="L97" title="All 2 branches covered.">        for (Transaction transaction:transactions) {</span>
+<span class="fc" id="L98">            transactionService.addTransaction(transaction);</span>
+
+<span class="fc" id="L100">        }</span>
+<span class="fc" id="L101">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

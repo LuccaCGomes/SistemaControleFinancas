@@ -1,10 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Category.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Archetype - com.trabalho.controlefinancas</a> &gt; <a href="index.source.html" class="el_package">com.trabalho.controlefinancas.model</a> &gt; <span class="el_source">Category.java</span></div><h1>Category.java</h1><pre class="source lang-java linenums">package com.trabalho.controlefinancas.model;
 
-import jakarta.persistence.*;
-
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 
 @Entity
 @Table(name = &quot;category&quot;)
@@ -22,7 +31,7 @@ public class Category {
     @Column
     private BigDecimal budget;
 
-<span class="fc" id="L25">    @OneToMany(mappedBy = &quot;category&quot;, cascade = CascadeType.ALL, orphanRemoval = true)</span>
+<span class="fc" id="L34">    @OneToMany(mappedBy = &quot;category&quot;, cascade = CascadeType.ALL, orphanRemoval = true)</span>
     private List&lt;Transaction&gt; transactions = new ArrayList&lt;&gt;();
 
     @ManyToOne
@@ -30,99 +39,99 @@ public class Category {
     private User user;
 
     // Default constructor
-<span class="fc" id="L33">    public Category() {}</span>
+<span class="fc" id="L42">    public Category() {}</span>
 
     // Constructor with name
-<span class="fc" id="L36">    public Category(String name) {</span>
-<span class="fc" id="L37">        this.name = name;</span>
-<span class="fc" id="L38">    }</span>
+<span class="fc" id="L45">    public Category(String name) {</span>
+<span class="fc" id="L46">        this.name = name;</span>
+<span class="fc" id="L47">    }</span>
 
     // Constructor with name and budget
-<span class="fc" id="L41">    public Category(String name, BigDecimal budget) {</span>
-<span class="fc" id="L42">        this.name = name;</span>
-<span class="fc" id="L43">        this.budget = budget;</span>
-<span class="fc" id="L44">    }</span>
+<span class="fc" id="L50">    public Category(String name, BigDecimal budget) {</span>
+<span class="fc" id="L51">        this.name = name;</span>
+<span class="fc" id="L52">        this.budget = budget;</span>
+<span class="fc" id="L53">    }</span>
 
     // Constructor with name and description
-<span class="fc" id="L47">    public Category(String name, String description) {</span>
-<span class="fc" id="L48">        this.name = name;</span>
-<span class="fc" id="L49">        this.description = description;</span>
-<span class="fc" id="L50">    }</span>
+<span class="fc" id="L56">    public Category(String name, String description) {</span>
+<span class="fc" id="L57">        this.name = name;</span>
+<span class="fc" id="L58">        this.description = description;</span>
+<span class="fc" id="L59">    }</span>
 
     // Constructor with name, description and budget
-<span class="fc" id="L53">    public Category(String name, String description, BigDecimal budget) {</span>
-<span class="fc" id="L54">        this.name = name;</span>
-<span class="fc" id="L55">        this.description = description;</span>
-<span class="fc" id="L56">        this.budget = budget;</span>
-<span class="fc" id="L57">    }</span>
+<span class="fc" id="L62">    public Category(String name, String description, BigDecimal budget) {</span>
+<span class="fc" id="L63">        this.name = name;</span>
+<span class="fc" id="L64">        this.description = description;</span>
+<span class="fc" id="L65">        this.budget = budget;</span>
+<span class="fc" id="L66">    }</span>
 
     // Constructor with name, description, budget and user
-<span class="fc" id="L60">    public Category(String name, String description, BigDecimal budget, User user) {</span>
-<span class="fc" id="L61">        this.name = name;</span>
-<span class="fc" id="L62">        this.description = description;</span>
-<span class="fc" id="L63">        this.budget = budget;</span>
-<span class="fc" id="L64">        this.user = user;</span>
-<span class="fc" id="L65">    }</span>
+<span class="fc" id="L69">    public Category(String name, String description, BigDecimal budget, User user) {</span>
+<span class="fc" id="L70">        this.name = name;</span>
+<span class="fc" id="L71">        this.description = description;</span>
+<span class="fc" id="L72">        this.budget = budget;</span>
+<span class="fc" id="L73">        this.user = user;</span>
+<span class="fc" id="L74">    }</span>
 
     // Getters and setters
     public Long getId() {
-<span class="fc" id="L69">        return id;</span>
+<span class="fc" id="L78">        return id;</span>
     }
 
     public void setId(Long id) {
-<span class="fc" id="L73">        this.id = id;</span>
-<span class="fc" id="L74">    }</span>
+<span class="fc" id="L82">        this.id = id;</span>
+<span class="fc" id="L83">    }</span>
 
     public String getName() {
-<span class="fc" id="L77">        return name;</span>
+<span class="fc" id="L86">        return name;</span>
     }
 
     public void setName(String name) {
-<span class="fc" id="L81">        this.name = name;</span>
-<span class="fc" id="L82">    }</span>
+<span class="fc" id="L90">        this.name = name;</span>
+<span class="fc" id="L91">    }</span>
 
     public BigDecimal getBudget() {
-<span class="fc" id="L85">        return budget;</span>
+<span class="fc" id="L94">        return budget;</span>
     }
 
     public void setBudget(BigDecimal budget) {
-<span class="fc" id="L89">        this.budget = budget;</span>
-<span class="fc" id="L90">    }</span>
+<span class="fc" id="L98">        this.budget = budget;</span>
+<span class="fc" id="L99">    }</span>
 
     public String getDescription() {
-<span class="fc" id="L93">        return description;</span>
+<span class="fc" id="L102">        return description;</span>
     }
 
     public void setDescription(String description) {
-<span class="fc" id="L97">        this.description = description;</span>
-<span class="fc" id="L98">    }</span>
+<span class="fc" id="L106">        this.description = description;</span>
+<span class="fc" id="L107">    }</span>
 
     public List&lt;Transaction&gt; getTransactions() {
-<span class="fc" id="L101">        return transactions;</span>
+<span class="fc" id="L110">        return transactions;</span>
     }
 
     public void setTransactions(List&lt;Transaction&gt; transactions) {
-<span class="fc" id="L105">        this.transactions = transactions;</span>
-<span class="fc" id="L106">    }</span>
+<span class="fc" id="L114">        this.transactions = transactions;</span>
+<span class="fc" id="L115">    }</span>
 
     public User getUser() {
-<span class="fc" id="L109">        return user;</span>
+<span class="fc" id="L118">        return user;</span>
     }
 
     public void setUser(User user) {
-<span class="fc" id="L113">        this.user = user;</span>
-<span class="fc" id="L114">    }</span>
+<span class="fc" id="L122">        this.user = user;</span>
+<span class="fc" id="L123">    }</span>
 
     // Helper method to add a transaction
     public void addTransaction(Transaction transaction) {
-<span class="fc" id="L118">        transactions.add(transaction);</span>
-<span class="fc" id="L119">        transaction.setCategory(this);</span>
-<span class="fc" id="L120">    }</span>
+<span class="fc" id="L127">        transactions.add(transaction);</span>
+<span class="fc" id="L128">        transaction.setCategory(this);</span>
+<span class="fc" id="L129">    }</span>
 
     // Helper method to remove a transaction
     public void removeTransaction(Transaction transaction) {
-<span class="fc" id="L124">        transactions.remove(transaction);</span>
-<span class="fc" id="L125">        transaction.setCategory(null);</span>
-<span class="fc" id="L126">    }</span>
+<span class="fc" id="L133">        transactions.remove(transaction);</span>
+<span class="fc" id="L134">        transaction.setCategory(null);</span>
+<span class="fc" id="L135">    }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

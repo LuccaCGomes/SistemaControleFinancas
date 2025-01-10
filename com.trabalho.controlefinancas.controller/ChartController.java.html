@@ -1,47 +1,48 @@
 <?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ChartController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Archetype - com.trabalho.controlefinancas</a> &gt; <a href="index.source.html" class="el_package">com.trabalho.controlefinancas.controller</a> &gt; <span class="el_source">ChartController.java</span></div><h1>ChartController.java</h1><pre class="source lang-java linenums">package com.trabalho.controlefinancas.controller;
 
-import com.trabalho.controlefinancas.service.ChartService;
-import org.jfree.chart.ChartUtils;
-import org.jfree.chart.JFreeChart;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+
+import org.jfree.chart.ChartUtils;
+import org.jfree.chart.JFreeChart;
+
+import org.springframework.http.MediaType;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
+
 import com.trabalho.controlefinancas.model.User;
+import com.trabalho.controlefinancas.service.ChartService;
+import org.springframework.web.bind.annotation.RestController;
 
-@Controller
-<span class="nc" id="L17">public class ChartController {</span>
+@RestController
+public class ChartController {
 
-    @Autowired
-    private ChartService chartService;
+    private final ChartService chartService;
+
+    // Constructor injection
+<span class="nc" id="L23">    public ChartController(ChartService chartService) {</span>
+<span class="nc" id="L24">        this.chartService = chartService;</span>
+<span class="nc" id="L25">    }</span>
 
     @GetMapping(value = &quot;/simple-chart&quot;, produces = MediaType.IMAGE_PNG_VALUE)
-    @ResponseBody
     public byte[] getExpenseChart(@AuthenticationPrincipal User user) throws IOException {
-        //System.out.println(&quot;Iniciando geração do gráfico para o usuário autenticado: &quot; + user.getUsername());
 
-<span class="nc" id="L27">        JFreeChart chart = chartService.createExpensePieChart(user);</span>
+<span class="nc" id="L30">        JFreeChart chart = chartService.createExpensePieChart(user);</span>
 
-<span class="nc" id="L29">        ByteArrayOutputStream baos = new ByteArrayOutputStream();</span>
-<span class="nc" id="L30">        ChartUtils.writeChartAsPNG(baos, chart, 600, 400);</span>
-        //System.out.println(&quot;Gráfico gerado e convertido para PNG com sucesso&quot;);
+<span class="nc" id="L32">        ByteArrayOutputStream baos = new ByteArrayOutputStream();</span>
+<span class="nc" id="L33">        ChartUtils.writeChartAsPNG(baos, chart, 600, 400);</span>
 
-<span class="nc" id="L33">        return baos.toByteArray();</span>
+<span class="nc" id="L35">        return baos.toByteArray();</span>
     }
 
     @GetMapping(value = &quot;/cash-flow-chart&quot;, produces = MediaType.IMAGE_PNG_VALUE)
-    @ResponseBody
     public byte[] getCashFlowChart(@AuthenticationPrincipal User user) throws IOException {
-<span class="nc" id="L39">        JFreeChart chart = chartService.createCashFlowChart(user);</span>
+<span class="nc" id="L40">        JFreeChart chart = chartService.createCashFlowChart(user);</span>
 
-<span class="nc" id="L41">        ByteArrayOutputStream baos = new ByteArrayOutputStream();</span>
-<span class="nc" id="L42">        ChartUtils.writeChartAsPNG(baos, chart, 600, 400);</span>
+<span class="nc" id="L42">        ByteArrayOutputStream baos = new ByteArrayOutputStream();</span>
+<span class="nc" id="L43">        ChartUtils.writeChartAsPNG(baos, chart, 600, 400);</span>
 
-<span class="nc" id="L44">        return baos.toByteArray();</span>
+<span class="nc" id="L45">        return baos.toByteArray();</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

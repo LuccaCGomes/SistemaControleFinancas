@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PdfExportService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Archetype - com.trabalho.controlefinancas</a> &gt; <a href="index.source.html" class="el_package">com.trabalho.controlefinancas.service</a> &gt; <span class="el_source">PdfExportService.java</span></div><h1>PdfExportService.java</h1><pre class="source lang-java linenums">package com.trabalho.controlefinancas.service;
+import java.io.ByteArrayOutputStream;
+
+import org.springframework.stereotype.Service;
+import org.xhtmlrenderer.pdf.ITextRenderer;
+
+@Service
+<span class="fc" id="L8">public class PdfExportService {</span>
+
+    public byte[] generatePdf(String htmlContent) {
+<span class="fc" id="L11">        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {</span>
+<span class="fc" id="L12">            ITextRenderer renderer = new ITextRenderer();</span>
+<span class="fc" id="L13">            renderer.setDocumentFromString(htmlContent);</span>
+<span class="fc" id="L14">            renderer.layout();</span>
+<span class="fc" id="L15">            renderer.createPDF(outputStream);</span>
+<span class="fc" id="L16">            return outputStream.toByteArray();</span>
+<span class="fc" id="L17">        } catch (Exception e) {</span>
+<span class="fc" id="L18">            throw new RuntimeException(&quot;Error generating PDF&quot;, e);</span>
+        }
+    }
+
+    public String prepareHtmlWithChart(String htmlTemplate, String chartPieBase64, String chartCashFlowBase64) {
+        // Substituir o marcador ${graficoBase64} pelo gráfico gerado
+<span class="fc" id="L24">        return htmlTemplate.replace(&quot;${graficoPieBase64}&quot;, chartPieBase64)</span>
+<span class="fc" id="L25">                .replace(&quot;${graficoCashFlowBase64}&quot;, chartCashFlowBase64);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

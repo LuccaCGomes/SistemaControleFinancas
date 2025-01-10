@@ -1,51 +1,52 @@
 <?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>UserService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Archetype - com.trabalho.controlefinancas</a> &gt; <a href="index.source.html" class="el_package">com.trabalho.controlefinancas.service</a> &gt; <span class="el_source">UserService.java</span></div><h1>UserService.java</h1><pre class="source lang-java linenums">package com.trabalho.controlefinancas.service;
 
-import com.trabalho.controlefinancas.model.User;
-import com.trabalho.controlefinancas.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import java.util.Optional;
+
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
 
-
-import java.util.Optional;
+import com.trabalho.controlefinancas.model.User;
+import com.trabalho.controlefinancas.repository.UserRepository;
+import com.trabalho.controlefinancas.model.UserRole;
 
 @Service
-<span class="fc" id="L16">public class UserService implements UserDetailsService{</span>
+public class UserService implements UserDetailsService{
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    // Construtor para injeção de dependência
+<span class="fc" id="L22">    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {</span>
+<span class="fc" id="L23">        this.userRepository = userRepository;</span>
+<span class="fc" id="L24">        this.passwordEncoder = passwordEncoder;</span>
+<span class="fc" id="L25">    }</span>
 
     public void registerUser(String username, String password) {
-<span class="fc" id="L25">        User user = new User(username,password);</span>
-<span class="fc bfc" id="L26" title="All 2 branches covered.">        if (userRepository.findByUsername(user.getUsername()).isPresent()) {</span>
-<span class="fc" id="L27">            throw new RuntimeException(&quot;Username already exists&quot;);</span>
+<span class="fc" id="L28">        User user = new User(username,password);</span>
+<span class="fc bfc" id="L29" title="All 2 branches covered.">        if (userRepository.findByUsername(user.getUsername()).isPresent()) {</span>
+<span class="fc" id="L30">            throw new RuntimeException(&quot;Username already exists&quot;);</span>
         }
-<span class="fc" id="L29">        user.setPassword(passwordEncoder.encode(user.getPassword()));</span>
-<span class="fc" id="L30">        userRepository.save(user);</span>
-<span class="fc" id="L31">    }</span>
+<span class="fc" id="L32">        user.setPassword(passwordEncoder.encode(user.getPassword()));</span>
+<span class="fc" id="L33">        userRepository.save(user);</span>
+<span class="fc" id="L34">    }</span>
 
 
     public User findUserByUsername(String username) {
-<span class="fc bfc" id="L35" title="All 2 branches covered.">        if (userRepository.findByUsername(username).isEmpty()) {</span>
-<span class="fc" id="L36">            throw new RuntimeException(&quot;Username doesn't exists&quot;);</span>
-        }
-<span class="fc" id="L38">        return userRepository.findByUsername(username).get();</span>
+<span class="nc" id="L38">        return userRepository.findByUsername(username)</span>
+<span class="nc" id="L39">                .orElseThrow(() -&gt; new RuntimeException(&quot;Username doesn't exist&quot;));</span>
     }
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-<span class="fc" id="L42">        return userRepository.findByUsername(username)</span>
-<span class="fc" id="L43">                .orElseThrow(() -&gt; new UsernameNotFoundException(&quot;Usuário de nome \&quot;&quot;+username+ &quot;\&quot; não foi achado&quot;));</span>
+<span class="fc" id="L43">        return userRepository.findByUsername(username)</span>
+<span class="fc" id="L44">                .orElseThrow(() -&gt; new UsernameNotFoundException(&quot;Usuário de nome \&quot;&quot;+username+ &quot;\&quot; não foi achado&quot;));</span>
     }
 
     public boolean loginUser(String username, String password) {
-<span class="fc" id="L47">        Optional&lt;User&gt; user = userRepository.findByUsername(username);</span>
-<span class="fc bfc" id="L48" title="All 4 branches covered.">        return user.isPresent() &amp;&amp; user.get().getPassword().equals(password);</span>
+<span class="fc" id="L48">        Optional&lt;User&gt; user = userRepository.findByUsername(username);</span>
+<span class="fc bfc" id="L49" title="All 4 branches covered.">        return user.isPresent() &amp;&amp; user.get().getPassword().equals(password);</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

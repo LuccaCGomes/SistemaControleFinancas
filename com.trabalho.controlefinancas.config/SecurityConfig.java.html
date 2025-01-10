@@ -18,27 +18,27 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 <span class="nc" id="L19">        http</span>
 <span class="nc" id="L20">                .csrf(csrf -&gt; csrf</span>
-<span class="nc" id="L21">                        .ignoringRequestMatchers(new AntPathRequestMatcher(&quot;/h2-console/**&quot;))</span>
+<span class="nc" id="L21">                .ignoringRequestMatchers(new AntPathRequestMatcher(&quot;/h2-console/**&quot;))</span>
                 )
 <span class="nc" id="L23">                .headers(headers -&gt; headers</span>
-<span class="nc" id="L24">                        .frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin)</span>
+<span class="nc" id="L24">                .frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin)</span>
                 )
 <span class="nc" id="L26">                .authorizeHttpRequests(auth -&gt; auth</span>
-<span class="nc" id="L27">                        .requestMatchers(&quot;/&quot;).permitAll()</span>
-<span class="nc" id="L28">                        .requestMatchers(&quot;/h2-console/**&quot;).permitAll()</span>
-<span class="nc" id="L29">                        .requestMatchers(&quot;/register&quot;, &quot;/login&quot;, &quot;/css/**&quot;, &quot;/js/**&quot;).permitAll()</span>
-<span class="nc" id="L30">                        .anyRequest().authenticated()</span>
+<span class="nc" id="L27">                .requestMatchers(&quot;/&quot;, &quot;/register&quot;, &quot;/login&quot;, &quot;/css/**&quot;, &quot;/js/**&quot;).permitAll()</span>
+<span class="nc" id="L28">                .requestMatchers(&quot;/h2-console/**&quot;).permitAll()</span>
+<span class="nc" id="L29">                .requestMatchers(&quot;/add-goal&quot;).authenticated() // Exige autenticação para /add-goal</span>
+<span class="nc" id="L30">                .anyRequest().authenticated()</span>
                 )
 <span class="nc" id="L32">                .formLogin(form -&gt; form</span>
-<span class="nc" id="L33">                        .loginPage(&quot;/login&quot;)</span>
-<span class="nc" id="L34">                        .defaultSuccessUrl(&quot;/transactions&quot;, true)</span>
-<span class="nc" id="L35">                        .permitAll()</span>
+<span class="nc" id="L33">                .loginPage(&quot;/login&quot;)</span>
+<span class="nc" id="L34">                .defaultSuccessUrl(&quot;/transactions&quot;, true)</span>
+<span class="nc" id="L35">                .permitAll()</span>
                 )
 <span class="nc" id="L37">                .logout(logout -&gt; logout</span>
-<span class="nc" id="L38">                        .logoutUrl(&quot;/logout&quot;)</span>
-<span class="nc" id="L39">                        .logoutSuccessUrl(&quot;/&quot;)</span>
-<span class="nc" id="L40">                        .invalidateHttpSession(true)</span>
-<span class="nc" id="L41">                        .permitAll()</span>
+<span class="nc" id="L38">                .logoutUrl(&quot;/logout&quot;)</span>
+<span class="nc" id="L39">                .logoutSuccessUrl(&quot;/&quot;)</span>
+<span class="nc" id="L40">                .invalidateHttpSession(true)</span>
+<span class="nc" id="L41">                .permitAll()</span>
                 );
 
 <span class="nc" id="L44">        return http.build();</span>

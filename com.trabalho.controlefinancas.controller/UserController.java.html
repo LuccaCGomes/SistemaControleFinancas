@@ -1,10 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>UserController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Archetype - com.trabalho.controlefinancas</a> &gt; <a href="index.source.html" class="el_package">com.trabalho.controlefinancas.controller</a> &gt; <span class="el_source">UserController.java</span></div><h1>UserController.java</h1><pre class="source lang-java linenums">package com.trabalho.controlefinancas.controller;
 
-import com.trabalho.controlefinancas.model.Category;
-import com.trabalho.controlefinancas.model.User;
-import com.trabalho.controlefinancas.service.CategoryService;
-import com.trabalho.controlefinancas.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
+import java.math.BigDecimal;
+
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,71 +9,78 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.math.BigDecimal;
+import com.trabalho.controlefinancas.model.Category;
+import com.trabalho.controlefinancas.model.User;
+import com.trabalho.controlefinancas.service.CategoryService;
+import com.trabalho.controlefinancas.service.UserService;
 
 @Controller
-<span class="nc" id="L18">public class UserController {</span>
+public class UserController {
 
-    @Autowired
-    private UserService userService;
-    @Autowired
-    private CategoryService categoryService;
+    private final UserService userService;
+    private final CategoryService categoryService;
+
+    // Constructor Injection
+<span class="fc" id="L24">    public UserController(UserService userService, CategoryService categoryService) {</span>
+<span class="fc" id="L25">        this.userService = userService;</span>
+<span class="fc" id="L26">        this.categoryService = categoryService;</span>
+<span class="fc" id="L27">    }</span>
     @GetMapping(&quot;/loggedin&quot;)
     public String loggedin() {
-<span class="nc" id="L26">        return &quot;loggedin&quot;;</span>
+<span class="fc" id="L30">        return &quot;loggedin&quot;;</span>
     }
 
     @GetMapping(&quot;/&quot;)
     public String home() {
-<span class="nc" id="L31">        return &quot;home&quot;;</span>
+<span class="fc" id="L35">        return &quot;home&quot;;</span>
     }
 
     @GetMapping(&quot;/register&quot;)
     public String showRegistrationForm() {
-<span class="nc" id="L36">        return &quot;register&quot;;</span>
+<span class="fc" id="L40">        return &quot;register&quot;;</span>
     }
 
     @PostMapping(&quot;/register&quot;)
     public String registerUser(@RequestParam String username, @RequestParam String password, Model model, RedirectAttributes redirectAttributes) {
         try {
-<span class="nc" id="L42">            userService.registerUser(username, password);</span>
+<span class="fc" id="L46">            userService.registerUser(username, password);</span>
             //Divida Têcnica para inicialiar categoria padrão.
-<span class="nc" id="L44">            User user = userService.findUserByUsername(username);</span>
-<span class="nc" id="L45">            Category baseCategory1 = new Category(&quot;Alimentação&quot;, &quot;Gastos com Alimentos&quot;);</span>
-<span class="nc" id="L46">            baseCategory1.setUser(user);</span>
-<span class="nc" id="L47">            categoryService.addCategory(baseCategory1);</span>
-<span class="nc" id="L48">            Category baseCategory2 = new Category(&quot;Transporte&quot;, BigDecimal.valueOf(1000));</span>
-<span class="nc" id="L49">            baseCategory2.setUser(user);</span>
-<span class="nc" id="L50">            categoryService.addCategory(baseCategory2);</span>
-<span class="nc" id="L51">            Category baseCategory3 = new Category(&quot;Saúde&quot;, &quot;Gastos com Saúde&quot;, BigDecimal.valueOf(1500));</span>
-<span class="nc" id="L52">            baseCategory3.setUser(user);</span>
-<span class="nc" id="L53">            categoryService.addCategory(baseCategory3);</span>
-<span class="nc" id="L54">            Category baseCategory4 = new Category(&quot;Salário&quot;);</span>
-<span class="nc" id="L55">            baseCategory4.setUser(user);</span>
-<span class="nc" id="L56">            categoryService.addCategory(baseCategory4);</span>
+<span class="fc" id="L48">            User user = userService.findUserByUsername(username);</span>
+<span class="fc" id="L49">            Category baseCategory1 = new Category(&quot;Alimentação&quot;, &quot;Gastos com Alimentos&quot;);</span>
+<span class="fc" id="L50">            baseCategory1.setUser(user);</span>
+<span class="fc" id="L51">            categoryService.addCategory(baseCategory1);</span>
+<span class="fc" id="L52">            Category baseCategory2 = new Category(&quot;Transporte&quot;, BigDecimal.valueOf(1000));</span>
+<span class="fc" id="L53">            baseCategory2.setUser(user);</span>
+<span class="fc" id="L54">            categoryService.addCategory(baseCategory2);</span>
+<span class="fc" id="L55">            Category baseCategory3 = new Category(&quot;Saúde&quot;, &quot;Gastos com Saúde&quot;, BigDecimal.valueOf(1500));</span>
+<span class="fc" id="L56">            baseCategory3.setUser(user);</span>
+<span class="fc" id="L57">            categoryService.addCategory(baseCategory3);</span>
+<span class="fc" id="L58">            Category baseCategory4 = new Category(&quot;Salário&quot;);</span>
+<span class="fc" id="L59">            baseCategory4.setUser(user);</span>
+<span class="fc" id="L60">            categoryService.addCategory(baseCategory4);</span>
             //termina a dívida tecnica
-<span class="nc" id="L58">            redirectAttributes.addFlashAttribute(&quot;successMessage&quot;, &quot;Cadastro concluído! Faça login.&quot;);</span>
-<span class="nc" id="L59">            return &quot;redirect:/login&quot;;</span>
-<span class="nc" id="L60">        } catch (RuntimeException e) {</span>
-<span class="nc" id="L61">            model.addAttribute(&quot;error&quot;, &quot;Nome de usuário já existe. Por favor escolha um outro nome de usuário.&quot;);</span>
-<span class="nc" id="L62">            return &quot;register&quot;;</span>
+<span class="fc" id="L62">            redirectAttributes.addFlashAttribute(&quot;successMessage&quot;, &quot;Cadastro concluído! Faça login.&quot;);</span>
+<span class="fc" id="L63">            return &quot;redirect:/login&quot;;</span>
+<span class="fc" id="L64">        } catch (RuntimeException e) {</span>
+<span class="fc" id="L65">            model.addAttribute(&quot;error&quot;, &quot;Nome de usuário já existe. Por favor escolha um outro nome de usuário.&quot;);</span>
+<span class="fc" id="L66">            return &quot;register&quot;;</span>
         }
     }
 
     @GetMapping(&quot;/login&quot;)
     public String showLoginForm() {
-<span class="nc" id="L68">        return &quot;login&quot;;</span>
+<span class="fc" id="L72">        return &quot;login&quot;;</span>
     }
 
     @PostMapping(&quot;/login&quot;)
     public String loginUser(@RequestParam String username, @RequestParam String password, Model model) {
-<span class="nc bnc" id="L73" title="All 2 branches missed.">        if (userService.loginUser(username, password)) {</span>
-<span class="nc" id="L74">            model.addAttribute(&quot;username&quot;, username);</span>
-<span class="nc" id="L75">            model.addAttribute(&quot;message&quot;, &quot;Usuário logado com sucesso!&quot;);</span>
-<span class="nc" id="L76">            return &quot;loggedin&quot;;</span>
+<span class="fc bfc" id="L77" title="All 2 branches covered.">        if (userService.loginUser(username, password)) {</span>
+<span class="fc" id="L78">            model.addAttribute(&quot;username&quot;, username);</span>
+<span class="fc" id="L79">            model.addAttribute(&quot;message&quot;, &quot;Usuário logado com sucesso!&quot;);</span>
+<span class="fc" id="L80">            return &quot;loggedin&quot;;</span>
         } else {
-<span class="nc" id="L78">            model.addAttribute(&quot;errorMessage&quot;, &quot;Usuário ou senha inválidos&quot;);</span>
-<span class="nc" id="L79">            return &quot;login&quot;;</span>
+<span class="fc" id="L82">            model.addAttribute(&quot;errorMessage&quot;, &quot;Usuário ou senha inválidos&quot;);</span>
+<span class="fc" id="L83">            return &quot;login&quot;;</span>
         }
     }
 }

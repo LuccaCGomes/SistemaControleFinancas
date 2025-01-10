@@ -1,63 +1,69 @@
 <?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ChartService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Archetype - com.trabalho.controlefinancas</a> &gt; <a href="index.source.html" class="el_package">com.trabalho.controlefinancas.service</a> &gt; <span class="el_source">ChartService.java</span></div><h1>ChartService.java</h1><pre class="source lang-java linenums">package com.trabalho.controlefinancas.service;
 
-import org.jfree.chart.ChartFactory;
-import org.jfree.chart.JFreeChart;
-import org.jfree.chart.plot.PiePlot;
-import org.jfree.data.general.DefaultPieDataset;
-import com.trabalho.controlefinancas.model.Transaction;
-import com.trabalho.controlefinancas.model.TransactionType;
-import com.trabalho.controlefinancas.model.User;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.math.BigDecimal;
+import java.time.ZoneId;
+import java.util.Base64;
+import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Date;
-import java.time.ZoneId;
 
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartUtils;
+import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.DateAxis;
 import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.plot.PiePlot;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
+import org.jfree.data.general.DefaultPieDataset;
 import org.jfree.data.time.Day;
 import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
+import org.springframework.stereotype.Service;
 
-import java.util.Comparator;
+import com.trabalho.controlefinancas.model.Transaction;
+import com.trabalho.controlefinancas.model.TransactionType;
+import com.trabalho.controlefinancas.model.User;
 
 @Service
-<span class="fc" id="L31">public class ChartService {</span>
+public class ChartService {
 
-    @Autowired
-    private TransactionService transactionService;
+    private final TransactionService transactionService;
+
+    // Construtor para injeção de dependência
+<span class="fc" id="L38">    public ChartService(TransactionService transactionService) {</span>
+<span class="fc" id="L39">        this.transactionService = transactionService;</span>
+<span class="fc" id="L40">    }</span>
 
     public JFreeChart createExpensePieChart(User user) {
-<span class="fc" id="L37">        List&lt;Transaction&gt; transactions = transactionService.getUserTransactions(user);</span>
+<span class="fc" id="L43">        List&lt;Transaction&gt; transactions = transactionService.getUserTransactions(user);</span>
 
         // Utiliza um Map temporário para acumular os valores das categorias
-<span class="fc" id="L40">        Map&lt;String, Double&gt; tempCategoryAmounts = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L46">        Map&lt;String, Double&gt; tempCategoryAmounts = new HashMap&lt;&gt;();</span>
 
-<span class="fc" id="L42">        transactions.stream()</span>
-<span class="pc bpc" id="L43" title="1 of 2 branches missed.">                .filter(transaction -&gt; transaction.getType() == TransactionType.DESPESA)</span>
-<span class="fc" id="L44">                .forEach(transaction -&gt; {</span>
-<span class="fc" id="L45">                    String categoryName = transaction.getCategory().getName();</span>
-<span class="fc" id="L46">                    BigDecimal amount = transaction.getAmount();</span>
+<span class="fc" id="L48">        transactions.stream()</span>
+<span class="pc bpc" id="L49" title="1 of 2 branches missed.">                .filter(transaction -&gt; transaction.getType() == TransactionType.DESPESA)</span>
+<span class="fc" id="L50">                .forEach(transaction -&gt; {</span>
+<span class="fc" id="L51">                    String categoryName = transaction.getCategory().getName();</span>
+<span class="fc" id="L52">                    BigDecimal amount = transaction.getAmount();</span>
 
                     // Se já existe um valor para a categoria, soma o valor da transação
-<span class="fc" id="L49">                    double currentAmount = tempCategoryAmounts.getOrDefault(categoryName, 0.0);</span>
-<span class="fc" id="L50">                    tempCategoryAmounts.put(categoryName, currentAmount + amount.doubleValue());</span>
-<span class="fc" id="L51">                });</span>
+<span class="fc" id="L55">                    double currentAmount = tempCategoryAmounts.getOrDefault(categoryName, 0.0);</span>
+<span class="fc" id="L56">                    tempCategoryAmounts.put(categoryName, currentAmount + amount.doubleValue());</span>
+<span class="fc" id="L57">                });</span>
 
         // Cria o dataset final usando os valores acumulados no Map
-<span class="fc" id="L54">        DefaultPieDataset dataset = new DefaultPieDataset();</span>
-<span class="fc" id="L55">        tempCategoryAmounts.forEach((category, totalAmount) -&gt; {</span>
-<span class="fc" id="L56">            dataset.setValue(category, totalAmount);</span>
-<span class="fc" id="L57">        });</span>
+<span class="fc" id="L60">        DefaultPieDataset dataset = new DefaultPieDataset();</span>
+<span class="fc" id="L61">        tempCategoryAmounts.forEach((category, totalAmount) -&gt; {</span>
+<span class="fc" id="L62">            dataset.setValue(category, totalAmount);</span>
+<span class="fc" id="L63">        });</span>
 
         // Cria o gráfico de pizza com os dados do dataset
-<span class="fc" id="L60">        JFreeChart chart = ChartFactory.createPieChart(</span>
+<span class="fc" id="L66">        JFreeChart chart = ChartFactory.createPieChart(</span>
                 &quot;Distribuição de Despesas&quot;, // Título
                 dataset,                   // Dataset
                 true,                       // Legenda visível
@@ -66,45 +72,59 @@ import java.util.Comparator;
         );
 
         // Ajusta o gráfico (exemplo: remove contornos das fatias)
-<span class="fc" id="L69">        PiePlot plot = (PiePlot) chart.getPlot();</span>
-<span class="fc" id="L70">        plot.setSectionOutlinesVisible(false);</span>
+<span class="fc" id="L75">        PiePlot plot = (PiePlot) chart.getPlot();</span>
+<span class="fc" id="L76">        plot.setSectionOutlinesVisible(false);</span>
 
-<span class="fc" id="L72">        return chart; // Retorna o gráfico gerado</span>
+<span class="fc" id="L78">        return chart; // Retorna o gráfico gerado</span>
+    }
+
+    public String createExpensePieChartBase64(User user) throws IOException {
+<span class="nc" id="L82">        JFreeChart chart =createExpensePieChart(user);</span>
+<span class="nc" id="L83">        ByteArrayOutputStream baos = new ByteArrayOutputStream();</span>
+<span class="nc" id="L84">        ChartUtils.writeChartAsPNG(baos, chart, 600, 400);</span>
+<span class="nc" id="L85">        return &quot;data:image/png;base64,&quot; + Base64.getEncoder().encodeToString(baos.toByteArray());</span>
     }
 
     public JFreeChart createCashFlowChart(User user) {
-<span class="fc" id="L76">        List&lt;Transaction&gt; transactions = transactionService.getUserTransactions(user);</span>
+<span class="fc" id="L89">        List&lt;Transaction&gt; transactions = transactionService.getUserTransactions(user);</span>
 
         // Ordenar transações por data
-<span class="fc" id="L79">        transactions.sort(Comparator.comparing(Transaction::getDate));</span>
+<span class="fc" id="L92">        transactions.sort(Comparator.comparing(Transaction::getDate));</span>
 
         // Cria a série de dados para o gráfico
-<span class="fc" id="L82">        TimeSeries series = new TimeSeries(&quot;Saldo Acumulado&quot;);</span>
-<span class="fc" id="L83">        BigDecimal saldoAcumulado = BigDecimal.ZERO;</span>
+<span class="fc" id="L95">        TimeSeries series = new TimeSeries(&quot;Saldo Acumulado&quot;);</span>
+<span class="fc" id="L96">        BigDecimal saldoAcumulado = BigDecimal.ZERO;</span>
 
-<span class="fc bfc" id="L85" title="All 2 branches covered.">        for (Transaction transaction : transactions) {</span>
-<span class="fc bfc" id="L86" title="All 2 branches covered.">            BigDecimal valor = transaction.getType() == TransactionType.RECEITA</span>
-<span class="fc" id="L87">                    ? transaction.getAmount()</span>
-<span class="fc" id="L88">                    : transaction.getAmount().negate();</span>
-<span class="fc" id="L89">            saldoAcumulado = saldoAcumulado.add(valor);</span>
+<span class="fc bfc" id="L98" title="All 2 branches covered.">        for (Transaction transaction : transactions) {</span>
+<span class="fc bfc" id="L99" title="All 2 branches covered.">            BigDecimal valor = transaction.getType() == TransactionType.RECEITA</span>
+<span class="fc" id="L100">                    ? transaction.getAmount()</span>
+<span class="fc" id="L101">                    : transaction.getAmount().negate();</span>
+<span class="fc" id="L102">            saldoAcumulado = saldoAcumulado.add(valor);</span>
 
             // Adiciona o saldo acumulado à série
-<span class="fc" id="L92">            Date date = Date.from(transaction.getDate().atStartOfDay(ZoneId.systemDefault()).toInstant());</span>
-<span class="fc" id="L93">            series.addOrUpdate(new Day(date), saldoAcumulado.doubleValue());</span>
-<span class="fc" id="L94">        }</span>
+<span class="fc" id="L105">            Date date = Date.from(transaction.getDate().atStartOfDay(ZoneId.systemDefault()).toInstant());</span>
+<span class="fc" id="L106">            series.addOrUpdate(new Day(date), saldoAcumulado.doubleValue());</span>
+<span class="fc" id="L107">        }</span>
 
         // Adiciona a série ao conjunto de dados
-<span class="fc" id="L97">        TimeSeriesCollection dataset = new TimeSeriesCollection(series);</span>
+<span class="fc" id="L110">        TimeSeriesCollection dataset = new TimeSeriesCollection(series);</span>
 
         // Configura o gráfico
-<span class="fc" id="L100">        XYPlot plot = new XYPlot(</span>
+<span class="fc" id="L113">        XYPlot plot = new XYPlot(</span>
                 dataset,
                 new DateAxis(&quot;Data&quot;),
                 new NumberAxis(&quot;Saldo Acumulado&quot;),
                 new XYLineAndShapeRenderer(true, false)
         );
 
-<span class="fc" id="L107">        return new JFreeChart(&quot;Fluxo de Caixa&quot;, JFreeChart.DEFAULT_TITLE_FONT, plot, true);</span>
+<span class="fc" id="L120">        return new JFreeChart(&quot;Fluxo de Caixa&quot;, JFreeChart.DEFAULT_TITLE_FONT, plot, true);</span>
+    }
+
+    public String createCashFlowChartBase64(User user) throws IOException {
+<span class="nc" id="L124">        JFreeChart chart =createCashFlowChart(user);</span>
+<span class="nc" id="L125">        ByteArrayOutputStream baos = new ByteArrayOutputStream();</span>
+<span class="nc" id="L126">        ChartUtils.writeChartAsPNG(baos, chart, 600, 400);</span>
+<span class="nc" id="L127">        return &quot;data:image/png;base64,&quot; + Base64.getEncoder().encodeToString(baos.toByteArray());</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

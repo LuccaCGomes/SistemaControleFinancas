@@ -1,37 +1,80 @@
 <?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ResumeController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Archetype - com.trabalho.controlefinancas</a> &gt; <a href="index.source.html" class="el_package">com.trabalho.controlefinancas.controller</a> &gt; <span class="el_source">ResumeController.java</span></div><h1>ResumeController.java</h1><pre class="source lang-java linenums">package com.trabalho.controlefinancas.controller;
 
-import com.trabalho.controlefinancas.model.User;
-import com.trabalho.controlefinancas.service.TransactionService;
-import org.springframework.beans.factory.annotation.Autowired;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Map;
+
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.Map;
+import com.trabalho.controlefinancas.model.FinancialGoal;
+import com.trabalho.controlefinancas.model.User;
+import com.trabalho.controlefinancas.model.UserRole;
+import com.trabalho.controlefinancas.service.FinancialGoalService;
+import com.trabalho.controlefinancas.service.TransactionService;
 
 @Controller
-<span class="nc" id="L16">public class ResumeController {</span>
+public class ResumeController {
 
-    @Autowired
-    private TransactionService transactionService;
+    private final TransactionService transactionService;
+    private final FinancialGoalService financialGoalService;
+
+    // Constructor injection
+<span class="fc" id="L28">    public ResumeController(TransactionService transactionService, FinancialGoalService financialGoalService) {</span>
+<span class="fc" id="L29">        this.transactionService = transactionService;</span>
+<span class="fc" id="L30">        this.financialGoalService = financialGoalService;</span>
+<span class="fc" id="L31">    }</span>
 
     @GetMapping(&quot;/monitoring&quot;)
     public String getResumoFinanceiro(@AuthenticationPrincipal User user, Model model) {
-<span class="nc" id="L23">        LocalDate currentDate = LocalDate.now();</span>
-<span class="nc" id="L24">        int month = currentDate.getMonthValue();</span>
-<span class="nc" id="L25">        int year = currentDate.getYear();</span>
+<span class="fc" id="L35">        LocalDate currentDate = LocalDate.now();</span>
+<span class="fc" id="L36">        int month = currentDate.getMonthValue();</span>
+<span class="fc" id="L37">        int year = currentDate.getYear();</span>
 
-<span class="nc" id="L27">        Map&lt;String, BigDecimal&gt; summary = transactionService.getMonthlyFinancialSummary(user, month, year);</span>
+<span class="fc" id="L39">        Map&lt;String, BigDecimal&gt; summary = transactionService.getMonthlyFinancialSummary(user, month, year);</span>
+<span class="fc" id="L40">        BigDecimal finalBalance = summary.get(&quot;finalBalance&quot;);</span>
 
-<span class="nc" id="L29">        model.addAttribute(&quot;initialBalance&quot;, summary.get(&quot;initialBalance&quot;));</span>
-<span class="nc" id="L30">        model.addAttribute(&quot;totalIncome&quot;, summary.get(&quot;totalIncome&quot;));</span>
-<span class="nc" id="L31">        model.addAttribute(&quot;totalExpense&quot;, summary.get(&quot;totalExpense&quot;));</span>
-<span class="nc" id="L32">        model.addAttribute(&quot;finalBalance&quot;, summary.get(&quot;finalBalance&quot;));</span>
+        // Verificar metas com base no saldo final
+<span class="fc" id="L43">        financialGoalService.checkGoals(user, finalBalance);</span>
 
-<span class="nc" id="L34">        return &quot;monitoring&quot;;</span>
+<span class="fc" id="L45">        List&lt;FinancialGoal&gt; goals = financialGoalService.getUserGoals(user);</span>
+
+        // Calcular rendimento potencial
+<span class="fc" id="L48">        BigDecimal rendimentoPotencial = BigDecimal.ZERO;</span>
+<span class="pc bpc" id="L49" title="2 of 4 branches missed.">        if (finalBalance != null &amp;&amp; finalBalance.compareTo(BigDecimal.ZERO) &gt; 0) {</span>
+<span class="fc" id="L50">            rendimentoPotencial = finalBalance.multiply(BigDecimal.valueOf(0.09435)); // 1% do saldo final</span>
+        }
+
+<span class="fc" id="L53">        model.addAttribute(&quot;initialBalance&quot;, summary.get(&quot;initialBalance&quot;));</span>
+<span class="fc" id="L54">        model.addAttribute(&quot;totalIncome&quot;, summary.get(&quot;totalIncome&quot;));</span>
+<span class="fc" id="L55">        model.addAttribute(&quot;totalExpense&quot;, summary.get(&quot;totalExpense&quot;));</span>
+<span class="fc" id="L56">        model.addAttribute(&quot;finalBalance&quot;, finalBalance);</span>
+<span class="fc" id="L57">        model.addAttribute(&quot;rendimentoPotencial&quot;, rendimentoPotencial);</span>
+<span class="fc" id="L58">        model.addAttribute(&quot;goals&quot;, goals);</span>
+<span class="fc" id="L59">        model.addAttribute(&quot;user&quot;, user);</span>
+
+<span class="fc" id="L61">        return &quot;monitoring&quot;;</span>
+    }
+
+    @PostMapping(&quot;/add-goal&quot;)
+    public String addGoal(
+            @RequestParam String description,
+            @RequestParam BigDecimal targetAmount,
+            @AuthenticationPrincipal User user) {
+
+<span class="fc" id="L70">        FinancialGoal goal = new FinancialGoal();</span>
+<span class="fc" id="L71">        goal.setDescription(description);</span>
+<span class="fc" id="L72">        goal.setTargetAmount(targetAmount);</span>
+<span class="fc" id="L73">        goal.setAchieved(false);</span>
+<span class="fc" id="L74">        goal.setUser(user);</span>
+<span class="fc" id="L75">        financialGoalService.addFinancialGoal(goal);</span>
+
+<span class="fc" id="L77">        return &quot;redirect:/monitoring&quot;;</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>
