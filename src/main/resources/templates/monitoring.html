@@ -132,7 +132,7 @@
               <li th:each="goal : ${goals}" class="list-group-item d-flex justify-content-between align-items-center">
                 <div>
                   <h5 class="mb-1" th:text="${goal.description}">Descrição</h5>
-                  <p class="mb-0 text-muted" th:text="'Meta: R$ ' + ${#numbers.formatDecimal(goal.targetAmount, 1, 'POINT', 2, 'COMMA')}">Meta</p>
+                  <p class="mb-0 text-muted" th:text="'Meta: ' + ${#numbers.formatDecimal(goal.targetAmount, 1, 'POINT', 2, 'COMMA')}">Meta</p>
                 </div>
                 <span class="badge" th:classappend="${goal.achieved} ? 'bg-success' : 'bg-warning'"
                       th:text="${goal.achieved} ? 'Atingida' : 'Em progresso'">Status</span>
@@ -162,9 +162,8 @@
     <p style="margin-bottom: 0.5rem;">
       Rendimento Potencial 100% CDI (Aproximadamente 1% ao mês):
       <span style="font-weight: bold; color: #28a745;"
-            th:text="${#numbers.formatCurrency(rendimentoPotencial)}"
-            title="'Baseado no saldo atual com juros compostos de 1% ao mês'">
-      R$ 0,00
+            th:text="${#numbers.formatDecimal(rendimentoPotencial, 1, 'POINT', 2, 'COMMA')}"
+            title="'Baseado no saldo atual com juros compostos de 1% ao mês'">0,00
     </span>
     </p>
     <small style="color: #6c757d;">Este é um cálculo estimado. Os rendimentos reais podem variar.</small>
@@ -176,19 +175,19 @@
       <tbody>
       <tr>
         <th>Saldo Inicial</th>
-        <td th:text="${#numbers.formatCurrency(initialBalance)}">R$ 0,00</td>
+        <td th:text="${#numbers.formatDecimal(initialBalance, 1, 'POINT', 2, 'COMMA')}">0,00</td>
       </tr>
       <tr class="table-success">
         <th>Receitas Totais</th>
-        <td th:text="${#numbers.formatCurrency(totalIncome)}">R$ 0,00</td>
+        <td th:text="${#numbers.formatDecimal(totalIncome, 1, 'POINT', 2, 'COMMA')}">0,00</td>
       </tr>
       <tr class="table-danger">
         <th>Despesas Totais</th>
-        <td th:text="${#numbers.formatCurrency(totalExpense)}">R$ 0,00</td>
+        <td th:text="${#numbers.formatDecimal(totalExpense, 1, 'POINT', 2, 'COMMA')}">0,00</td>
       </tr>
       <tr class="table-primary">
         <th>Saldo Final</th>
-        <td th:text="${#numbers.formatCurrency(finalBalance)}">R$ 0,00</td>
+        <td th:text="${#numbers.formatDecimal(finalBalance, 1, 'POINT', 2, 'COMMA')}">0,00</td>
       </tr>
       </tbody>
     </table>
