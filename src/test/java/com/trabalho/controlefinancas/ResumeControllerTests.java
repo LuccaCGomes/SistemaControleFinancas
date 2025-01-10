@@ -89,5 +89,40 @@ class ResumeControllerTest {
         verify(financialGoalService).getUserGoals(testUser);
     }
 
+    @Test
+    void addGoal_Success() {
+        // Arrange
+        String description = "New Goal";
+        BigDecimal targetAmount = new BigDecimal("1000");
 
+        // Act
+        String viewName = resumeController.addGoal(description, targetAmount, testUser);
+
+        // Assert
+        assertEquals("redirect:/monitoring", viewName);
+        verify(financialGoalService).addFinancialGoal(argThat(goal ->
+                goal.getDescription().equals(description) &&
+                        goal.getTargetAmount().equals(targetAmount) &&
+                        goal.getUser().equals(testUser) &&
+                        !goal.isAchieved()
+        ));
+    }
+
+
+    @Test
+    void addGoal_HandlesNullDescription() {
+        // Arrange
+        BigDecimal targetAmount = new BigDecimal("1000");
+
+        // Act
+        String viewName = resumeController.addGoal(null, targetAmount, testUser);
+
+        // Assert
+        assertEquals("redirect:/monitoring", viewName);
+        verify(financialGoalService).addFinancialGoal(argThat(goal ->
+                goal.getDescription() == null &&
+                        goal.getTargetAmount().equals(targetAmount) &&
+                        goal.getUser().equals(testUser)
+        ));
+    }
 }
