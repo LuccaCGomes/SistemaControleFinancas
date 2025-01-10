@@ -6,6 +6,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.trabalho.controlefinancas.config.GlobalCurrencyConfig;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
@@ -20,6 +22,8 @@ public class TransactionService {
 
     private final TransactionRepository transactionRepository;
     private final CurrencyConversionService currencyConversionService;
+    @Autowired
+    private GlobalCurrencyConfig globalCurrencyConfig;
 
     // Construtor para injeção de dependência
     public TransactionService(TransactionRepository transactionRepository, CurrencyConversionService currencyConversionService) {
@@ -32,6 +36,8 @@ public class TransactionService {
     }
 
     public String addTransaction(Transaction transaction) {
+        String targetCurrency = globalCurrencyConfig.getDefaultCurrency();
+
         Category category = transaction.getCategory();
         User user = transaction.getUser();
 
@@ -61,16 +67,16 @@ public class TransactionService {
                 .map(t -> {
                     return currencyConversionService.convert(
                             t.getCurrency().name(),
-                            "BRL",
+                            targetCurrency,
                             t.getAmount()
                     );
                 })
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         BigDecimal newTotal = totalTransactionsAmount.add(currencyConversionService.convert(
-                transaction.getCurrency().name()
-                ,"BRL"
-                ,transaction.getAmount()));
+                transaction.getCurrency().name(),
+                targetCurrency,
+                transaction.getAmount()));
 
 
 
@@ -98,14 +104,16 @@ public class TransactionService {
     }
 
     public Map<String, BigDecimal> getMonthlyFinancialSummary(User user, int month, int year) {
+        String targetCurrency = globalCurrencyConfig.getDefaultCurrency();
+
         List<Transaction> transactions = transactionRepository.findByUser(user);
 
         // Calcular o saldo inicial (todas as receitas - despesas até o último dia do mês anterior)
         BigDecimal initialBalance = transactions.stream()
                 .filter(t -> t.getDate().isBefore(LocalDate.of(year, month, 1)))
                 .map(t -> t.getType() == TransactionType.RECEITA ?
-                        currencyConversionService.convert(t.getCurrency().name(),"BRL",t.getAmount())
-                        : currencyConversionService.convert(t.getCurrency().name(),"BRL",t.getAmount()).negate())
+                        currencyConversionService.convert(t.getCurrency().name(),targetCurrency,t.getAmount())
+                        : currencyConversionService.convert(t.getCurrency().name(),targetCurrency,t.getAmount()).negate())
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         BigDecimal totalIncome = transactions.stream()
@@ -115,7 +123,7 @@ public class TransactionService {
                 .map(transaction -> {
                     return currencyConversionService.convert(
                             transaction.getCurrency().name(),
-                            "BRL",
+                            targetCurrency,
                             transaction.getAmount()
                     );
                 })
@@ -128,7 +136,7 @@ public class TransactionService {
                 .map(transaction -> {
                     return currencyConversionService.convert(
                             transaction.getCurrency().name(),
-                            "BRL",
+                            targetCurrency,
                             transaction.getAmount()
                     );
                 })

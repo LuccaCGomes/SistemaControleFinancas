@@ -51,6 +51,17 @@
 
 <!-- Main Content -->
 <div class="container mt-5">
+
+    <form th:action="@{/set-default-currency}" method="post">
+        <label for="globalCurrency" class="form-label">Moeda Padrão</label>
+        <select id="globalCurrency" name="globalCurrency" class="form-select">
+            <option value="BRL" >Real (BRL)</option>
+            <option value="USD" >Dólar (USD)</option>
+            <option value="EUR" >Euro (EUR)</option>
+        </select>
+        <button type="submit" class="btn btn-primary mt-3">Atualizar</button>
+    </form>
+
     <form th:action="@{/import-csv}" method="post" enctype="multipart/form-data">
         <!-- Token CSRF -->
         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
@@ -61,6 +72,8 @@
         <div th:if="${error}" class="alert alert-danger" role="alert">
             <p th:text="${error}"></p>
         </div>
+
+
 
         <div class="mb-3">
             <label for="file" class="form-label">Importar CSV</label>

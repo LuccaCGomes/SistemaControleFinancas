@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 import ch.qos.logback.classic.pattern.CallerDataConverter;
+import com.trabalho.controlefinancas.config.GlobalCurrencyConfig;
 import com.trabalho.controlefinancas.model.*;
 import com.trabalho.controlefinancas.service.CurrencyConversionService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +31,9 @@ public class TransactionController {
     @Autowired
     private CurrencyConversionService conversionService;
 
+    @Autowired
+    private GlobalCurrencyConfig globalCurrencyConfig;
+
     // Constructor injection
     public TransactionController(TransactionService transactionService, CategoryRepository categoryRepository) {
         this.transactionService = transactionService;
@@ -38,14 +42,14 @@ public class TransactionController {
 
     @GetMapping("/transactions")
     public String showTransactions(Model model, @AuthenticationPrincipal User user) {
+        String targetCurrency = globalCurrencyConfig.getDefaultCurrency();
+        model.addAttribute("globalCurrency", targetCurrency);
         List<Transaction> transactions = transactionService.getUserTransactions(user);
 
         transactions.forEach(transaction -> {
-            if (!transaction.getCurrency().equals(Currency.BRL)) {
-                BigDecimal convertedAmount = conversionService.convert(transaction.getCurrency().name(), "BRL", transaction.getAmount());
-                transaction.setAmount(convertedAmount);
-                transaction.setCurrency(Currency.BRL); // Atualiza a moeda para BRL
-            }
+            BigDecimal convertedAmount = conversionService.convert(transaction.getCurrency().name(), targetCurrency, transaction.getAmount());
+            transaction.setAmount(convertedAmount);
+            transaction.setCurrency(Currency.valueOf(targetCurrency));
         });
 
 

@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.trabalho.controlefinancas.config.GlobalCurrencyConfig;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartUtils;
 import org.jfree.chart.JFreeChart;
@@ -23,6 +24,7 @@ import org.jfree.data.general.DefaultPieDataset;
 import org.jfree.data.time.Day;
 import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.trabalho.controlefinancas.model.Transaction;
@@ -34,6 +36,8 @@ public class ChartService {
 
     private final TransactionService transactionService;
     private final CurrencyConversionService currencyConversionService;
+    @Autowired
+    private GlobalCurrencyConfig globalCurrencyConfig;
 
     // Construtor para injeção de dependência
     public ChartService(TransactionService transactionService, CurrencyConversionService currencyConversionService) {
@@ -42,6 +46,7 @@ public class ChartService {
     }
 
     public JFreeChart createExpensePieChart(User user) {
+        String targetCurrency = globalCurrencyConfig.getDefaultCurrency();
         List<Transaction> transactions = transactionService.getUserTransactions(user);
 
         // Utiliza um Map temporário para acumular os valores das categorias
@@ -53,7 +58,7 @@ public class ChartService {
                     String categoryName = transaction.getCategory().getName();
                     BigDecimal amount = currencyConversionService.convert(
                             transaction.getCurrency().name(),
-                            "BRL",
+                            targetCurrency,
                             transaction.getAmount());
 
                     // Se já existe um valor para a categoria, soma o valor da transação
@@ -91,6 +96,7 @@ public class ChartService {
     }
 
     public JFreeChart createCashFlowChart(User user) {
+        String targetCurrency = globalCurrencyConfig.getDefaultCurrency();
         List<Transaction> transactions = transactionService.getUserTransactions(user);
 
         // Ordenar transações por data
@@ -104,11 +110,11 @@ public class ChartService {
             BigDecimal valor = transaction.getType() == TransactionType.RECEITA
                     ?  currencyConversionService.convert(
                     transaction.getCurrency().name(),
-                    "BRL",
+                    targetCurrency,
                     transaction.getAmount())
                     :  currencyConversionService.convert(
                     transaction.getCurrency().name(),
-                    "BRL",
+                    targetCurrency,
                     transaction.getAmount()).negate();
             saldoAcumulado = saldoAcumulado.add(valor);
 

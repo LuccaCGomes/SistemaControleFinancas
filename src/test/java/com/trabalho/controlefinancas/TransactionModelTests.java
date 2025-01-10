@@ -6,12 +6,9 @@ import java.time.LocalDate;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import org.junit.jupiter.api.Test;
 
-import com.trabalho.controlefinancas.model.Category;
-import com.trabalho.controlefinancas.model.Transaction;
-import com.trabalho.controlefinancas.model.TransactionType;
-import com.trabalho.controlefinancas.model.User;
+import com.trabalho.controlefinancas.model.*;
+import org.junit.jupiter.api.Test;
 
 class TransactionModelTests {
 
@@ -27,6 +24,7 @@ class TransactionModelTests {
             date,
             "Salario",
             true,
+            Currency.BRL,
             user
         );
 

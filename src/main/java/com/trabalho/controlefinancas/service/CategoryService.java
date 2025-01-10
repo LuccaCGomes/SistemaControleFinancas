@@ -4,6 +4,8 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
+import com.trabalho.controlefinancas.config.GlobalCurrencyConfig;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.trabalho.controlefinancas.model.Category;
@@ -18,8 +20,9 @@ public class CategoryService {
 
     private final CategoryRepository categoryRepository;
     private final UserRepository userRepository;
-
     private final CurrencyConversionService currencyConversionService;
+    @Autowired
+    private GlobalCurrencyConfig globalCurrencyConfig;
 
     // Injeção de dependência via construtor
     public CategoryService(CategoryRepository categoryRepository, UserRepository userRepository, CurrencyConversionService currencyConversionService) {
@@ -58,6 +61,7 @@ public class CategoryService {
      * @return true se o orçamento foi excedido, false caso contrário
      */
     public boolean isBudgetExceededForCategory(User user, Long categoryId) {
+        String targetCurrency = globalCurrencyConfig.getDefaultCurrency();
         Optional<Category> categoryOpt = categoryRepository.findById(categoryId);
         if (categoryOpt.isPresent()) {
             Category category = categoryOpt.get();
@@ -67,7 +71,7 @@ public class CategoryService {
                         .map(transaction -> {
                             return currencyConversionService.convert(
                                     transaction.getCurrency().name(),
-                                    "BRL",
+                                    targetCurrency,
                                     transaction.getAmount()
                             );
                         })
@@ -86,6 +90,7 @@ public class CategoryService {
      * @return O valor restante do orçamento, ou BigDecimal.ZERO se a categoria não for encontrada ou o usuário não coincidir
      */
     public BigDecimal getRemainingBudgetForCategory(User user, Long categoryId) {
+        String targetCurrency = globalCurrencyConfig.getDefaultCurrency();
         Optional<Category> categoryOpt = categoryRepository.findById(categoryId);
         if (categoryOpt.isPresent()) {
             Category category = categoryOpt.get();
@@ -95,7 +100,7 @@ public class CategoryService {
                         .map(transaction -> {
                             return currencyConversionService.convert(
                                     transaction.getCurrency().name(),
-                                    "BRL",
+                                    targetCurrency,
                                     transaction.getAmount()
                             );
                         })
