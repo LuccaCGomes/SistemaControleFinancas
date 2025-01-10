@@ -65,5 +65,65 @@ class FinancialGoalServiceTest {
         verify(financialGoalRepository, never()).save(any());
     }
 
+    @Test
+    void checkGoals_GoalAchieved_UpdatesGoal() {
+        User user = new User();
+        BigDecimal currentBalance = new BigDecimal("200");
 
+        FinancialGoal goal1 = new FinancialGoal();
+        goal1.setTargetAmount(new BigDecimal("100"));
+        goal1.setAchieved(false);
+
+        List<FinancialGoal> goals = List.of(goal1);
+
+        when(financialGoalRepository.findByUser(user)).thenReturn(goals);
+
+        financialGoalService.checkGoals(user, currentBalance);
+
+        assertTrue(goal1.isAchieved());
+        verify(financialGoalRepository, times(1)).save(goal1);
+    }
+
+    @Test
+    void checkGoals_AlreadyAchievedGoal_NoUpdate() {
+        User user = new User();
+        BigDecimal currentBalance = new BigDecimal("200");
+
+        FinancialGoal goal1 = new FinancialGoal();
+        goal1.setTargetAmount(new BigDecimal("100"));
+        goal1.setAchieved(true);
+
+        List<FinancialGoal> goals = List.of(goal1);
+
+        when(financialGoalRepository.findByUser(user)).thenReturn(goals);
+
+        financialGoalService.checkGoals(user, currentBalance);
+
+        verify(financialGoalRepository, never()).save(any());
+    }
+
+    @Test
+    void checkGoals_MultipleGoals_UpdatesOnlyAchieved() {
+        User user = new User();
+        BigDecimal currentBalance = new BigDecimal("150");
+
+        FinancialGoal goal1 = new FinancialGoal();
+        goal1.setTargetAmount(new BigDecimal("100"));
+        goal1.setAchieved(false);
+
+        FinancialGoal goal2 = new FinancialGoal();
+        goal2.setTargetAmount(new BigDecimal("200"));
+        goal2.setAchieved(false);
+
+        List<FinancialGoal> goals = List.of(goal1, goal2);
+
+        when(financialGoalRepository.findByUser(user)).thenReturn(goals);
+
+        financialGoalService.checkGoals(user, currentBalance);
+
+        assertTrue(goal1.isAchieved());
+        assertFalse(goal2.isAchieved());
+        verify(financialGoalRepository, times(1)).save(goal1);
+        verify(financialGoalRepository, never()).save(goal2);
+    }
 }
