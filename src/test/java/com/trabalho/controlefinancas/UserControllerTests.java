@@ -118,4 +118,66 @@ class UserControllerTest {
         verify(model).addAttribute("username", username);
         verify(model).addAttribute("message", "Usuário logado com sucesso!");
     }
+
+    @Test
+    void loginUser_FailedLogin_ReturnsLoginViewWithError() {
+        // Given
+        String username = "invalidUser";
+        String password = "invalidPass";
+        when(userService.loginUser(username, password)).thenReturn(false);
+
+        // When
+        String viewName = userController.loginUser(username, password, model);
+
+        // Then
+        assertEquals("login", viewName);
+        verify(model).addAttribute("errorMessage", "Usuário ou senha inválidos");
+    }
+
+    @Test
+    void registerUser_VerifyCategoryCreation_AllCategoriesCreated() {
+        // Given
+        String username = "newUser";
+        String password = "password123";
+        when(userService.findUserByUsername(username)).thenReturn(testUser);
+
+        // When
+        userController.registerUser(username, password, model, redirectAttributes);
+
+        // Then
+        verify(categoryService, times(4)).addCategory(any(Category.class));
+
+        // Verify specific category creations
+        verify(categoryService).addCategory(argThat(category ->
+                category.getName().equals("Alimentação") &&
+                        category.getDescription().equals("Gastos com Alimentos")));
+
+        verify(categoryService).addCategory(argThat(category ->
+                category.getName().equals("Transporte") &&
+                        category.getBudget().equals(BigDecimal.valueOf(1000))));
+
+        verify(categoryService).addCategory(argThat(category ->
+                category.getName().equals("Saúde") &&
+                        category.getDescription().equals("Gastos com Saúde") &&
+                        category.getBudget().equals(BigDecimal.valueOf(1500))));
+
+        verify(categoryService).addCategory(argThat(category ->
+                category.getName().equals("Salário")));
+    }
+
+    @Test
+    void registerUser_ExceptionDuringCategoryCreation_HandlesError() {
+        // Given
+        String username = "newUser";
+        String password = "password123";
+        when(userService.findUserByUsername(username)).thenReturn(testUser);
+        doThrow(new RuntimeException("Category creation failed")).when(categoryService).addCategory(any(Category.class));
+
+        // When
+        String viewName = userController.registerUser(username, password, model, redirectAttributes);
+
+        // Then
+        assertEquals("register", viewName);
+        verify(model).addAttribute(eq("error"), anyString());
+    }
 }
