@@ -107,6 +107,7 @@
                         <th>Descrição</th>
                         <th>Categoria</th>
                         <th class="text-end">Valor</th>
+                        <th>Moeda</th>
                         <th>Recorrente</th>
                         <th>Actions</th>
                     </tr>
@@ -119,6 +120,7 @@
                         <td th:text="${transaction.category.name}"></td>
                         <td class="text-end"
                             th:text="${#numbers.formatDecimal(transaction.amount, 1, 'POINT', 2, 'COMMA')}"></td>
+                        <td th:text="${transaction.currency}"></td>
                         <td th:text="${transaction.isRecurring ? 'Sim' : 'Não'}"></td>
                         <td>
                             <div class="btn-group btn-group-sm">
@@ -131,7 +133,7 @@
                                         th:data-transaction-description="${transaction.description}"
                                         th:data-transaction-category-id="${transaction.category.id}"
                                         th:data-transaction-amount="${transaction.amount}"
-                                        onclick="openEditTransactionModal(this.getAttribute('data-transaction-id'),this.getAttribute('data-transaction-date'),this.getAttribute('data-transaction-type'),this.getAttribute('data-transaction-description'),this.getAttribute('data-transaction-category-id'),this.getAttribute('data-transaction-amount'))">
+                                        onclick="openEditTransactionModal(this.getAttribute('data-transaction-id'),this.getAttribute('data-transaction-date'),this.getAttribute('data-transaction-type'),this.getAttribute('data-transaction-description'),this.getAttribute('data-transaction-category-id'),this.getAttribute('data-transaction-amount'),this.getAttribute('data-transaction-currency'))">
                                     <i class="fas fa-edit"></i>
                                 </button>
                                 <button type="button" class="btn btn-danger"
@@ -141,12 +143,12 @@
                         </td>
                     </tr>
                     <tr th:if="${#lists.isEmpty(transactions)}">
-                        <td colspan="7" class="text-center">Nenhuma transação encontrada!</td>
+                        <td colspan="8" class="text-center">Nenhuma transação encontrada!</td>
                     </tr>
                     </tbody>
                     <tfoot th:if="${!#lists.isEmpty(transactions)}">
                     <tr class="table-dark">
-                        <td colspan="7"></td>
+                        <td colspan="8"></td>
                     </tr>
                     </tfoot>
                 </table>
@@ -197,6 +199,17 @@
                         <input type="number" class="form-control" id="amount" name="amount"
                                step="0.01" min="0.01" required>
                     </div>
+
+                    <div class="mb-3">
+                        <label for="currency" class="form-label">Moeda</label>
+                        <select class="form-select" id="currency" name="currency" required>
+                            <option th:each="currency : ${T(com.trabalho.controlefinancas.model.Currency).values()}"
+                                    th:value="${currency}"
+                                    th:text="${currency}">
+                            </option>
+                        </select>
+                    </div>
+
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
@@ -239,7 +252,7 @@
         modal.show();
     }
 
-    function openEditTransactionModal(id,date, type, description, categoryId, amount) {
+    function openEditTransactionModal(id,date, type, description, categoryId, amount, currency) {
     document.getElementById('id').value = id;
     document.getElementById('date').value = date;
     document.getElementById('type').value = type;

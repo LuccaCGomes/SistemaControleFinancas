@@ -1,8 +1,5 @@
 package com.trabalho.controlefinancas.service;
-import com.trabalho.controlefinancas.model.Category;
-import com.trabalho.controlefinancas.model.Transaction;
-import com.trabalho.controlefinancas.model.TransactionType;
-import com.trabalho.controlefinancas.model.User;
+import com.trabalho.controlefinancas.model.*;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.CSVRecord;
@@ -56,7 +53,7 @@ public class CsvService {
 
         try (Reader reader = new BufferedReader(new InputStreamReader(file.getInputStream()))) {
             Iterable<CSVRecord> records = CSVFormat.DEFAULT
-                    .withHeader("ID", "Tipo", "Descrição", "Valor", "Data", "Categoria", "É Recorrente?")
+                    .withHeader("ID", "Tipo", "Descrição", "Valor","Moeda", "Data", "Categoria", "É Recorrente?")
                     .withFirstRecordAsHeader()
                     .parse(reader);
 
@@ -65,6 +62,7 @@ public class CsvService {
                 String type = record.get("Tipo");
                 String description = record.get("Descrição");
                 String amount = record.get("Valor");
+                String currency = record.get("Moeda");
                 String date = record.get("Data");
                 String categoryName = record.get("Categoria");
                 String isRecurring = record.get("É Recorrente?");
@@ -84,6 +82,7 @@ public class CsvService {
 
                 transaction.setType(type.equals("RECEITA") ? TransactionType.RECEITA: TransactionType.DESPESA);
                 transaction.setAmount(amount.isEmpty() ? null : new BigDecimal(amount));
+                transaction.setCurrency(Currency.valueOf(currency));
                 transaction.setDescription(description);
                 transaction.setDate(localDate);
                 transaction.setCategory(category);

@@ -92,7 +92,7 @@ public class ExportController {
         List<Transaction> transactions = transactionService.getUserTransactions(user);
 
         List<String[]> data = new ArrayList<>();
-        data.add(new String[]{"ID", "Tipo", "Descrição", "Valor", "Data", "Categoria", "É Recorrente?"});
+        data.add(new String[]{"ID", "Tipo", "Descrição", "Valor", "Moeda","Data", "Categoria", "É Recorrente?"});
 
         // Converter cada transação em uma linha CSV
         for (Transaction transaction : transactions) {
@@ -101,6 +101,7 @@ public class ExportController {
                 transaction.getType().toString(),
                 transaction.getDescription(),
                 String.valueOf(transaction.getAmount()),
+                transaction.getCurrency().toString(),
                 transaction.getDate().toString(),
                 transaction.getCategory().getName(),
                 transaction.isRecurringString()

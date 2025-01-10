@@ -68,6 +68,17 @@
                         </div>
 
                         <div class="mb-3">
+                            <label for="currency" class="form-label">Moeda</label>
+                            <select class="form-select" id="currency" name="currency" required>
+                                <option th:each="currency : ${T(com.trabalho.controlefinancas.model.Currency).values()}"
+                                        th:value="${currency}"
+                                        th:text="${currency}">
+                                </option>
+                            </select>
+                        </div>
+
+
+                        <div class="mb-3">
                             <label for="isRecurring" class="form-label">É recorrente?</label>
                             <input type="checkbox" id="isRecurring" name="isRecurring" value="true">
                         </div>

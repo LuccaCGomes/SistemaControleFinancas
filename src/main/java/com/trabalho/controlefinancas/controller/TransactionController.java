@@ -4,6 +4,10 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
+import ch.qos.logback.classic.pattern.CallerDataConverter;
+import com.trabalho.controlefinancas.model.*;
+import com.trabalho.controlefinancas.service.CurrencyConversionService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -14,10 +18,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.trabalho.controlefinancas.exception.BudgetExceededException;
-import com.trabalho.controlefinancas.model.Category;
-import com.trabalho.controlefinancas.model.Transaction;
-import com.trabalho.controlefinancas.model.TransactionType;
-import com.trabalho.controlefinancas.model.User;
 import com.trabalho.controlefinancas.repository.CategoryRepository;
 import com.trabalho.controlefinancas.service.TransactionService;
 
@@ -26,6 +26,9 @@ public class TransactionController {
 
     private final TransactionService transactionService;
     private final CategoryRepository categoryRepository;
+
+    @Autowired
+    private CurrencyConversionService conversionService;
 
     // Constructor injection
     public TransactionController(TransactionService transactionService, CategoryRepository categoryRepository) {
@@ -36,6 +39,15 @@ public class TransactionController {
     @GetMapping("/transactions")
     public String showTransactions(Model model, @AuthenticationPrincipal User user) {
         List<Transaction> transactions = transactionService.getUserTransactions(user);
+
+        transactions.forEach(transaction -> {
+            if (!transaction.getCurrency().equals(Currency.BRL)) {
+                BigDecimal convertedAmount = conversionService.convert(transaction.getCurrency().name(), "BRL", transaction.getAmount());
+                transaction.setAmount(convertedAmount);
+                transaction.setCurrency(Currency.BRL); // Atualiza a moeda para BRL
+            }
+        });
+
 
         BigDecimal totalValue = transactions.stream()
                 .map(Transaction::getAmount) // Assuming `getAmount()` returns BigDecimal
@@ -62,6 +74,7 @@ public class TransactionController {
             @RequestParam String date,
             @RequestParam String description,
             @RequestParam(defaultValue = "false") boolean isRecurring,
+            @RequestParam Currency currency,
             @AuthenticationPrincipal User user,
             RedirectAttributes redirectAttributes
             ) {
@@ -73,7 +86,9 @@ public class TransactionController {
                 LocalDate.parse(date),
                 description,
                 isRecurring,
+                currency,
                 user
+
         );
 
         try {

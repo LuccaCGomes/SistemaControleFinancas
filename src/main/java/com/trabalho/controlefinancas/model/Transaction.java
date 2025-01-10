@@ -25,6 +25,10 @@ public class Transaction {
 
     @Enumerated(EnumType.STRING)
     private TransactionType type; // RECEITA ou DESPESA
+
+    @Enumerated(EnumType.STRING)
+    private Currency currency; // Nova coluna para moeda
+
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
@@ -43,17 +47,26 @@ public class Transaction {
     public Transaction() {
     }
 
-    public Transaction(TransactionType type, Category category, BigDecimal amount, LocalDate date, String description, boolean isRecurring, User user) {
+    public Transaction(TransactionType type, Category category, BigDecimal amount, LocalDate date, String description, boolean isRecurring,Currency currency, User user) {
         this.type = type;
         this.category = category;
         this.amount = amount;
         this.date = date;
         this.description = description;
         this.isRecurring = isRecurring;
+        this.currency = currency;
         this.user = user;
     }
 
     // Getters e Setters
+
+    public Currency getCurrency() {
+        return currency;
+    }
+
+    public void setCurrency(Currency currency) {
+        this.currency = currency;
+    }
 
     public User getUser() {
         return user;
