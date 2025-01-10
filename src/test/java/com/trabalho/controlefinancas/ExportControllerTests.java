@@ -88,6 +88,62 @@ class ExportControllerTest {
         testSummary.put("finalBalance", new BigDecimal("1200"));
     }
 
+    @Test
+    void exportPageToPdf_Success() throws Exception {
+        // Arrange
+        LocalDate currentDate = LocalDate.now();
+        when(transactionService.findByMonth(currentDate.getYear(), currentDate.getMonthValue(), testUser))
+                .thenReturn(testTransactions);
+        when(transactionService.getMonthlyFinancialSummary(testUser, currentDate.getMonthValue(), currentDate.getYear()))
+                .thenReturn(testSummary);
+        when(categoryRepository.findByUser(testUser)).thenReturn(testCategories);
+        when(templateService.renderTemplate(eq("report"), any())).thenReturn("<html>test</html>");
+        when(chartService.createExpensePieChartBase64(testUser)).thenReturn("pie-chart-data");
+        when(chartService.createCashFlowChartBase64(testUser)).thenReturn("cash-flow-data");
+        when(pdfExportService.prepareHtmlWithChart(anyString(), anyString(), anyString()))
+                .thenReturn("<html>test with charts</html>");
+        when(pdfExportService.generatePdf(anyString())).thenReturn("pdf-content".getBytes());
 
+        // Act
+        ResponseEntity<byte[]> response = exportController.exportPageToPdf(model, testUser);
+
+        // Assert
+        assertNotNull(response);
+        assertEquals(MediaType.APPLICATION_PDF, response.getHeaders().getContentType());
+        assertEquals("attachment; filename=relatorio.pdf",
+                response.getHeaders().getFirst("Content-Disposition"));
+        assertArrayEquals("pdf-content".getBytes(), response.getBody());
+
+        verify(transactionService).findByMonth(currentDate.getYear(), currentDate.getMonthValue(), testUser);
+        verify(categoryRepository).findByUser(testUser);
+        verify(templateService).renderTemplate(eq("report"), any());
+        verify(chartService).createExpensePieChartBase64(testUser);
+        verify(chartService).createCashFlowChartBase64(testUser);
+        verify(pdfExportService).prepareHtmlWithChart(anyString(), anyString(), anyString());
+        verify(pdfExportService).generatePdf(anyString());
+    }
+
+
+    @Test
+    void exportPageToPdf_HandlesIOException() throws Exception {
+        // Arrange
+        LocalDate currentDate = LocalDate.now();
+        when(transactionService.findByMonth(currentDate.getYear(), currentDate.getMonthValue(), testUser))
+                .thenReturn(testTransactions);
+        when(transactionService.getMonthlyFinancialSummary(testUser, currentDate.getMonthValue(), currentDate.getYear()))
+                .thenReturn(testSummary);
+        when(categoryRepository.findByUser(testUser)).thenReturn(testCategories);
+
+        // Substituindo a exceção verificada por uma RuntimeException para simular o erro.
+        when(templateService.renderTemplate(eq("report"), any()))
+                .thenThrow(new RuntimeException("Test exception"));
+
+        // Act & Assert
+        assertThrows(RuntimeException.class, () -> exportController.exportPageToPdf(model, testUser));
+
+        verify(transactionService).findByMonth(currentDate.getYear(), currentDate.getMonthValue(), testUser);
+        verify(categoryRepository).findByUser(testUser);
+        verify(templateService).renderTemplate(eq("report"), any());
+    }
 
 }
