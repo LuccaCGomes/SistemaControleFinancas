@@ -1,39 +1,65 @@
-package com.trabalho.controlefinancas;
+package com.trabalho.controlefinancas.model;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.security.core.GrantedAuthority;
 
-import com.trabalho.controlefinancas.model.User;
-import com.trabalho.controlefinancas.model.UserRole;
+import java.util.Collection;
 
-class UserModelTests {
+import static org.junit.jupiter.api.Assertions.*;
 
-    private User user;
-
-
-    @BeforeEach
-    void setUp() {
-        user = new User();
-    }
+class UserTest {
 
     @Test
-    void testSetAndGetRole() {
+    void getAuthorities_ShouldReturnCorrectRole() {
+        // Arrange
+        User user = new User();
         user.setRole(UserRole.ROLE_ADMIN);
-        assertEquals(UserRole.ROLE_ADMIN, user.getRole());
 
-        user.setRole(UserRole.ROLE_USER);
-        assertEquals(UserRole.ROLE_USER, user.getRole());
+        // Act
+        Collection<? extends GrantedAuthority> authorities = user.getAuthorities();
+
+        // Assert
+        assertEquals(1, authorities.size());
+        assertTrue(authorities.stream()
+                .anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMIN")));
     }
 
     @Test
-    void testSetAndIsEnabled() {
+    void isAccountNonExpired_ShouldAlwaysReturnTrue() {
+        // Arrange
+        User user = new User();
+
+        // Act & Assert
+        assertTrue(user.isAccountNonExpired());
+    }
+
+    @Test
+    void isAccountNonLocked_ShouldAlwaysReturnTrue() {
+        // Arrange
+        User user = new User();
+
+        // Act & Assert
+        assertTrue(user.isAccountNonLocked());
+    }
+
+    @Test
+    void isCredentialsNonExpired_ShouldAlwaysReturnTrue() {
+        // Arrange
+        User user = new User();
+
+        // Act & Assert
+        assertTrue(user.isCredentialsNonExpired());
+    }
+
+    @Test
+    void isEnabled_ShouldReflectEnabledProperty() {
+        // Arrange
+        User user = new User();
+        user.setEnabled(false);
+
+        // Act & Assert
+        assertFalse(user.isEnabled());
         user.setEnabled(true);
         assertTrue(user.isEnabled());
-
-        user.setEnabled(false);
-        assertFalse(user.isEnabled());
     }
 }

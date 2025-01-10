@@ -60,5 +60,31 @@ class TransactionModelTests {
         transaction.setRecurring(false);
         assertFalse(transaction.isRecurring());
     }
+
+    @Test
+    void isRecurringString_WhenTransactionIsRecurring_ReturnsSim() {
+        // Arrange
+        Transaction transaction = new Transaction();
+        transaction.setRecurring(true);
+
+        // Act
+        String result = transaction.isRecurringString();
+
+        // Assert
+        assertEquals("Sim", result, "Expected 'Sim' when transaction is recurring");
+    }
+
+    @Test
+    void isRecurringString_WhenTransactionIsNotRecurring_ReturnsNao() {
+        // Arrange
+        Transaction transaction = new Transaction();
+        transaction.setRecurring(false);
+
+        // Act
+        String result = transaction.isRecurringString();
+
+        // Assert
+        assertEquals("Não", result, "Expected 'Não' when transaction is not recurring");
+    }
 }
 
