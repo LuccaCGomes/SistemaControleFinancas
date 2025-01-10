@@ -33,10 +33,12 @@ import com.trabalho.controlefinancas.model.User;
 public class ChartService {
 
     private final TransactionService transactionService;
+    private final CurrencyConversionService currencyConversionService;
 
     // Construtor para injeção de dependência
-    public ChartService(TransactionService transactionService) {
+    public ChartService(TransactionService transactionService, CurrencyConversionService currencyConversionService) {
         this.transactionService = transactionService;
+        this.currencyConversionService = currencyConversionService;
     }
 
     public JFreeChart createExpensePieChart(User user) {
@@ -49,7 +51,10 @@ public class ChartService {
                 .filter(transaction -> transaction.getType() == TransactionType.DESPESA)
                 .forEach(transaction -> {
                     String categoryName = transaction.getCategory().getName();
-                    BigDecimal amount = transaction.getAmount();
+                    BigDecimal amount = currencyConversionService.convert(
+                            transaction.getCurrency().name(),
+                            "BRL",
+                            transaction.getAmount());
 
                     // Se já existe um valor para a categoria, soma o valor da transação
                     double currentAmount = tempCategoryAmounts.getOrDefault(categoryName, 0.0);
@@ -97,8 +102,14 @@ public class ChartService {
 
         for (Transaction transaction : transactions) {
             BigDecimal valor = transaction.getType() == TransactionType.RECEITA
-                    ? transaction.getAmount()
-                    : transaction.getAmount().negate();
+                    ?  currencyConversionService.convert(
+                    transaction.getCurrency().name(),
+                    "BRL",
+                    transaction.getAmount())
+                    :  currencyConversionService.convert(
+                    transaction.getCurrency().name(),
+                    "BRL",
+                    transaction.getAmount()).negate();
             saldoAcumulado = saldoAcumulado.add(valor);
 
             // Adiciona o saldo acumulado à série

@@ -19,10 +19,12 @@ import com.trabalho.controlefinancas.repository.TransactionRepository;
 public class TransactionService {
 
     private final TransactionRepository transactionRepository;
+    private final CurrencyConversionService currencyConversionService;
 
     // Construtor para injeção de dependência
-    public TransactionService(TransactionRepository transactionRepository) {
+    public TransactionService(TransactionRepository transactionRepository, CurrencyConversionService currencyConversionService) {
         this.transactionRepository = transactionRepository;
+        this.currencyConversionService = currencyConversionService;
     }
 
     public List<Transaction> getUserTransactions(User user) {
@@ -56,10 +58,20 @@ public class TransactionService {
                         && t.getDate().getYear() == year
                         && t.getType() == TransactionType.DESPESA
                 ) // Verifica o mesmo mês, ano e se é uma Despesa
-                .map(Transaction::getAmount)
+                .map(t -> {
+                    return currencyConversionService.convert(
+                            t.getCurrency().name(),
+                            "BRL",
+                            t.getAmount()
+                    );
+                })
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        BigDecimal newTotal = totalTransactionsAmount.add(transaction.getAmount());
+        BigDecimal newTotal = totalTransactionsAmount.add(currencyConversionService.convert(
+                transaction.getCurrency().name()
+                ,"BRL"
+                ,transaction.getAmount()));
+
 
 
 
@@ -91,21 +103,35 @@ public class TransactionService {
         // Calcular o saldo inicial (todas as receitas - despesas até o último dia do mês anterior)
         BigDecimal initialBalance = transactions.stream()
                 .filter(t -> t.getDate().isBefore(LocalDate.of(year, month, 1)))
-                .map(t -> t.getType() == TransactionType.RECEITA ? t.getAmount() : t.getAmount().negate())
+                .map(t -> t.getType() == TransactionType.RECEITA ?
+                        currencyConversionService.convert(t.getCurrency().name(),"BRL",t.getAmount())
+                        : currencyConversionService.convert(t.getCurrency().name(),"BRL",t.getAmount()).negate())
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         BigDecimal totalIncome = transactions.stream()
                 .filter(t -> t.getType() == TransactionType.RECEITA &&
                         t.getDate().getMonthValue() == month &&
                         t.getDate().getYear() == year)
-                .map(Transaction::getAmount)
+                .map(transaction -> {
+                    return currencyConversionService.convert(
+                            transaction.getCurrency().name(),
+                            "BRL",
+                            transaction.getAmount()
+                    );
+                })
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         BigDecimal totalExpense = transactions.stream()
                 .filter(t -> t.getType() == TransactionType.DESPESA &&
                         t.getDate().getMonthValue() == month &&
                         t.getDate().getYear() == year)
-                .map(Transaction::getAmount)
+                .map(transaction -> {
+                    return currencyConversionService.convert(
+                            transaction.getCurrency().name(),
+                            "BRL",
+                            transaction.getAmount()
+                    );
+                })
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         BigDecimal finalBalance = initialBalance.add(totalIncome).subtract(totalExpense);

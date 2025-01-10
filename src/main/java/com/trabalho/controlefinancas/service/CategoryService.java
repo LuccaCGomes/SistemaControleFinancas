@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.trabalho.controlefinancas.model.Category;
@@ -20,10 +19,13 @@ public class CategoryService {
     private final CategoryRepository categoryRepository;
     private final UserRepository userRepository;
 
+    private final CurrencyConversionService currencyConversionService;
+
     // Injeção de dependência via construtor
-    public CategoryService(CategoryRepository categoryRepository, UserRepository userRepository) {
+    public CategoryService(CategoryRepository categoryRepository, UserRepository userRepository, CurrencyConversionService currencyConversionService) {
         this.categoryRepository = categoryRepository;
         this.userRepository = userRepository;
+        this.currencyConversionService = currencyConversionService;
     }
 
     public void addCategory(Category category) {
@@ -62,7 +64,13 @@ public class CategoryService {
             if (category.getUser().equals(user)) {
                 BigDecimal totalExpenses = category.getTransactions().stream()
                         .filter(transaction -> transaction.getType() == TransactionType.DESPESA)
-                        .map(Transaction::getAmount)
+                        .map(transaction -> {
+                            return currencyConversionService.convert(
+                                    transaction.getCurrency().name(),
+                                    "BRL",
+                                    transaction.getAmount()
+                            );
+                        })
                         .reduce(BigDecimal.ZERO, BigDecimal::add);
                 return totalExpenses.compareTo(category.getBudget()) > 0;
             }
@@ -84,7 +92,13 @@ public class CategoryService {
             if (category.getUser().equals(user)) {
                 BigDecimal totalExpenses = category.getTransactions().stream()
                         .filter(transaction -> transaction.getType() == TransactionType.DESPESA)
-                        .map(Transaction::getAmount)
+                        .map(transaction -> {
+                            return currencyConversionService.convert(
+                                    transaction.getCurrency().name(),
+                                    "BRL",
+                                    transaction.getAmount()
+                            );
+                        })
                         .reduce(BigDecimal.ZERO, BigDecimal::add);
                 return category.getBudget().subtract(totalExpenses);
             }
