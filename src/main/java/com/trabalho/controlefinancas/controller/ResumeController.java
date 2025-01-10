@@ -47,7 +47,7 @@ public class ResumeController {
         // Calcular rendimento potencial
         BigDecimal rendimentoPotencial = BigDecimal.ZERO;
         if (finalBalance != null && finalBalance.compareTo(BigDecimal.ZERO) > 0) {
-            rendimentoPotencial = finalBalance.multiply(BigDecimal.valueOf(0.01)); // 1% do saldo final
+            rendimentoPotencial = finalBalance.multiply(BigDecimal.valueOf(0.09435)); // 1% do saldo final
         }
 
         model.addAttribute("initialBalance", summary.get("initialBalance"));
