@@ -155,6 +155,18 @@
       </div>
     </div>
   </div>
+  <div style="background-color: #e9ecef; border: 1px solid #ced4da; border-radius: 0.25rem; padding: 1rem; margin-bottom: 1rem;">
+    <h5 style="color: #0056b3; margin-bottom: 0.5rem;">Dica Econômica</h5>
+    <p style="margin-bottom: 0.5rem;">
+      Rendimento Potencial 100% CDI (Aproximadamente 1% ao mês):
+      <span style="font-weight: bold; color: #28a745;"
+            th:text="${#numbers.formatCurrency(rendimentoPotencial)}"
+            title="'Baseado no saldo atual com juros compostos de 1% ao mês'">
+      R$ 0,00
+    </span>
+    </p>
+    <small style="color: #6c757d;">Este é um cálculo estimado. Os rendimentos reais podem variar.</small>
+  </div>
 
   <div class="financial-summary">
     <h2 class="mb-4">Resumo Financeiro - Mês Atual</h2>
